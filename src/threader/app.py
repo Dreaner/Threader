@@ -1,0 +1,560 @@
+"""
+Project: Threader
+File Created: 2026-02-16
+Author: Xingnan Zhu
+File Name: app.py
+Description:
+    Dash web application for interactive pass analysis.
+    Left panel: Plotly pitch with players and pass arrows.
+    Right panel: Analysis results with ranked pass options.
+
+    Usage:
+        uv run threader              # via entry point
+        uv run python -m threader.app  # direct
+"""
+
+from __future__ import annotations
+
+import json
+from functools import lru_cache
+from pathlib import Path
+
+import dash
+from dash import Input, Output, State, callback, ctx, dcc, html, no_update
+import dash_bootstrap_components as dbc
+
+from threader.analysis.analyzer import analyze_pass_event
+from threader.data.events import extract_pass_events
+from threader.data.metadata import load_match_info
+from threader.models import AnalysisResult, PassEvent
+from threader.viz.plotly_passes import build_analysis_figure
+
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
+DATA_ROOT = Path("data/FIFA_World_Cup_2022")
+ASSETS_DIR = Path(__file__).parent / "assets"
+
+# Rank colors matching the pitch arrows
+RANK_COLORS = ["#FFD700", "#C0C0C0", "#CD7F32", "#888888", "#666666"]
+
+# Score color thresholds
+def _score_color(score: float) -> str:
+    if score >= 30:
+        return "#2ecc71"
+    elif score >= 20:
+        return "#f1c40f"
+    else:
+        return "#e74c3c"
+
+
+# ---------------------------------------------------------------------------
+# Data helpers
+# ---------------------------------------------------------------------------
+def _discover_matches() -> list[dict]:
+    """Scan the metadata directory for available matches."""
+    meta_dir = DATA_ROOT / "Metadata"
+    event_dir = DATA_ROOT / "Event Data"
+    matches = []
+
+    if not meta_dir.exists():
+        return matches
+
+    for meta_file in sorted(meta_dir.glob("*.json")):
+        game_id = meta_file.stem
+        event_file = event_dir / f"{game_id}.json"
+        if not event_file.exists():
+            continue
+        try:
+            info = load_match_info(str(meta_file))
+            label = f"{info.home_team.name} vs {info.away_team.name}"
+            matches.append({"label": label, "value": game_id, "info": info})
+        except Exception:
+            continue
+
+    return matches
+
+
+@lru_cache(maxsize=8)
+def _load_passes(game_id: str) -> list[PassEvent]:
+    """Load and cache pass events for a match."""
+    return extract_pass_events(
+        str(DATA_ROOT / "Event Data" / f"{game_id}.json"),
+        str(DATA_ROOT / "Metadata" / f"{game_id}.json"),
+    )
+
+
+@lru_cache(maxsize=8)
+def _get_match_info(game_id: str):
+    return load_match_info(str(DATA_ROOT / "Metadata" / f"{game_id}.json"))
+
+
+# Pre-discover matches at import time
+MATCHES = _discover_matches()
+
+
+# ---------------------------------------------------------------------------
+# Dash App
+# ---------------------------------------------------------------------------
+app = dash.Dash(
+    __name__,
+    assets_folder=str(ASSETS_DIR),
+    external_stylesheets=[dbc.themes.DARKLY],
+    title="Threader — Pass Analysis",
+    update_title=None,
+    suppress_callback_exceptions=True,
+)
+
+# Expose WSGI server for deployment (gunicorn threader.app:server)
+server = app.server
+
+
+# ---------------------------------------------------------------------------
+# Layout Helpers
+# ---------------------------------------------------------------------------
+def _build_header() -> html.Div:
+    return html.Div(
+        className="app-header",
+        children=[
+            html.Div([
+                html.H1("THREADER", className="app-title"),
+                html.P("AlphaGo-inspired Pass Analysis", className="app-subtitle"),
+            ]),
+            html.Div(
+                "FIFA World Cup 2022",
+                style={
+                    "color": "#9999b3",
+                    "fontSize": "0.8rem",
+                    "fontWeight": "600",
+                },
+            ),
+        ],
+    )
+
+
+def _build_selectors() -> html.Div:
+    match_options = [
+        {"label": m["label"], "value": m["value"]} for m in MATCHES
+    ]
+    default_match = MATCHES[0]["value"] if MATCHES else None
+
+    return html.Div(
+        className="selector-row",
+        children=[
+            dbc.Row([
+                dbc.Col([
+                    html.Div("Match", className="selector-label"),
+                    dcc.Dropdown(
+                        id="match-selector",
+                        options=match_options,
+                        value=default_match,
+                        clearable=False,
+                        style={"backgroundColor": "#1c1c35", "color": "#e8e8f0"},
+                    ),
+                ], md=5),
+                dbc.Col([
+                    html.Div("Pass Event", className="selector-label"),
+                    dcc.Dropdown(
+                        id="pass-selector",
+                        clearable=False,
+                        style={"backgroundColor": "#1c1c35", "color": "#e8e8f0"},
+                    ),
+                ], md=5),
+                dbc.Col([
+                    html.Div("Show", className="selector-label"),
+                    dcc.Dropdown(
+                        id="top-n-selector",
+                        options=[
+                            {"label": "Top 3", "value": 3},
+                            {"label": "Top 5", "value": 5},
+                            {"label": "All", "value": 99},
+                        ],
+                        value=3,
+                        clearable=False,
+                        style={"backgroundColor": "#1c1c35", "color": "#e8e8f0"},
+                    ),
+                ], md=2),
+            ]),
+        ],
+    )
+
+
+def _build_main() -> html.Div:
+    return html.Div(
+        className="main-content",
+        children=[
+            # Left: Pitch
+            html.Div(
+                className="pitch-column",
+                children=[
+                    dcc.Graph(
+                        id="pitch-graph",
+                        className="pitch-graph",
+                        style={"height": "calc(100vh - 140px)"},
+                        config={
+                            "displayModeBar": False,
+                            "staticPlot": False,
+                            "scrollZoom": False,
+                        },
+                    ),
+                ],
+            ),
+            # Right: Analysis panel
+            html.Div(
+                id="analysis-panel",
+                className="analysis-panel",
+                children=[
+                    html.Div(
+                        "Select a match and pass event to begin",
+                        className="loading-placeholder",
+                    )
+                ],
+            ),
+        ],
+    )
+
+
+# ---------------------------------------------------------------------------
+# App Layout
+# ---------------------------------------------------------------------------
+app.layout = html.Div(
+    className="app-container",
+    children=[
+        _build_header(),
+        _build_selectors(),
+        _build_main(),
+        # Hidden stores
+        dcc.Store(id="selected-option-idx", data=None),
+        dcc.Store(id="analysis-cache", data=None),
+    ],
+)
+
+
+# ---------------------------------------------------------------------------
+# Callbacks
+# ---------------------------------------------------------------------------
+
+@callback(
+    Output("pass-selector", "options"),
+    Output("pass-selector", "value"),
+    Input("match-selector", "value"),
+)
+def update_pass_list(game_id: str):
+    """When match changes, load pass events and populate the dropdown."""
+    if not game_id:
+        return [], None
+
+    passes = _load_passes(game_id)
+    options = []
+    for i, pe in enumerate(passes):
+        clock_min = pe.game_clock // 60
+        clock_sec = pe.game_clock % 60
+        outcome = "✓" if pe.is_complete else "✗"
+        label = (
+            f"P{pe.period} {clock_min:02d}:{clock_sec:02d}  "
+            f"{pe.passer_name} → {pe.target_name}  {outcome}"
+        )
+        options.append({"label": label, "value": i})
+
+    default = 5 if len(options) > 5 else 0
+    return options, default
+
+
+@callback(
+    Output("pitch-graph", "figure"),
+    Output("analysis-panel", "children"),
+    Output("analysis-cache", "data"),
+    Input("pass-selector", "value"),
+    Input("top-n-selector", "value"),
+    Input("selected-option-idx", "data"),
+    State("match-selector", "value"),
+)
+def update_analysis(pass_idx, top_n, selected_idx, game_id):
+    """Main callback: render pitch and analysis panel."""
+    if game_id is None or pass_idx is None:
+        empty_fig = {
+            "data": [],
+            "layout": {
+                "plot_bgcolor": "#1a472a",
+                "paper_bgcolor": "#0f0f1a",
+                "xaxis": {"visible": False},
+                "yaxis": {"visible": False},
+            },
+        }
+        placeholder = html.Div(
+            "Select a match and pass event to begin",
+            className="loading-placeholder",
+        )
+        return empty_fig, placeholder, None
+
+    # Load data
+    passes = _load_passes(game_id)
+    pass_event = passes[pass_idx]
+    match_info = _get_match_info(game_id)
+
+    # Run analysis
+    result = analyze_pass_event(pass_event)
+
+    # Build pitch figure
+    title = (
+        f"{match_info.home_team.short_name} vs {match_info.away_team.short_name} — "
+        f"{pass_event.passer_name}"
+    )
+    fig = build_analysis_figure(
+        result,
+        top_n=top_n,
+        show_all=True,
+        title=title,
+        selected_idx=selected_idx,
+    )
+    fig.update_layout(
+        height=None,
+        autosize=True,
+    )
+
+    # Build analysis panel
+    panel = _build_analysis_panel(result, pass_event, match_info, selected_idx)
+
+    # Cache analysis data for click interaction
+    cache = {
+        "game_id": game_id,
+        "pass_idx": pass_idx,
+        "n_options": len(result.ranked_options),
+    }
+
+    return fig, panel, cache
+
+
+@callback(
+    Output("selected-option-idx", "data"),
+    Input({"type": "option-card", "index": dash.ALL}, "n_clicks"),
+    State("selected-option-idx", "data"),
+    prevent_initial_call=True,
+)
+def handle_card_click(n_clicks_list, current_idx):
+    """Handle clicks on pass option cards."""
+    if not ctx.triggered_id:
+        return no_update
+    clicked_idx = ctx.triggered_id["index"]
+    # Toggle: click same card deselects
+    if clicked_idx == current_idx:
+        return None
+    return clicked_idx
+
+
+# ---------------------------------------------------------------------------
+# Panel Builder
+# ---------------------------------------------------------------------------
+def _build_analysis_panel(
+    result: AnalysisResult,
+    pass_event: PassEvent,
+    match_info,
+    selected_idx: int | None = None,
+) -> list:
+    """Build the right-side analysis panel content."""
+    ranked = result.ranked_options
+    children = []
+
+    # ---- Match Info Card ----
+    children.append(
+        html.Div(
+            className="match-info-card",
+            children=[
+                html.Div(
+                    className="teams",
+                    children=[
+                        html.Span(
+                            match_info.home_team.name,
+                            className="text-home",
+                        ),
+                        html.Span(" vs ", className="vs"),
+                        html.Span(
+                            match_info.away_team.name,
+                            className="text-away",
+                        ),
+                    ],
+                ),
+                html.Div(
+                    f"{match_info.stadium_name}",
+                    className="detail",
+                ),
+            ],
+        )
+    )
+
+    # ---- Pass Event Info ----
+    clock_min = pass_event.game_clock // 60
+    clock_sec = pass_event.game_clock % 60
+    outcome_text = "Complete" if pass_event.is_complete else "Incomplete"
+    outcome_color = "#2ecc71" if pass_event.is_complete else "#e74c3c"
+
+    children.append(
+        html.Div(
+            className="pass-event-info",
+            children=[
+                html.Div([
+                    html.Span(
+                        f"{pass_event.passer_name}",
+                        className="passer-name",
+                    ),
+                    html.Span(
+                        f" → {pass_event.target_name}",
+                        style={"color": "#9999b3", "fontSize": "0.85rem"},
+                    ),
+                ]),
+                html.Div([
+                    html.Span(
+                        f"P{pass_event.period} {clock_min:02d}:{clock_sec:02d}",
+                        className="meta-tag",
+                    ),
+                    html.Span(
+                        outcome_text,
+                        className="meta-tag",
+                        style={
+                            "color": outcome_color,
+                            "marginLeft": "6px",
+                        },
+                    ),
+                    *(
+                        [html.Span(
+                            "Better Option",
+                            className="meta-tag",
+                            style={
+                                "color": "#FFD700",
+                                "marginLeft": "6px",
+                            },
+                        )]
+                        if pass_event.better_option_type
+                        else []
+                    ),
+                ]),
+            ],
+        )
+    )
+
+    # ---- Section Title ----
+    children.append(
+        html.Div(
+            className="panel-section-title",
+            children=[
+                "📊",
+                f"PASS OPTIONS ({len(ranked)} evaluated)",
+            ],
+        )
+    )
+
+    # ---- Option Cards ----
+    for i, opt in enumerate(ranked):
+        is_actual = opt.target.player_id == pass_event.target_id
+        is_selected = selected_idx is not None and i == selected_idx
+
+        card_class = "option-card"
+        if is_selected:
+            card_class += " selected"
+        if is_actual:
+            card_class += " actual-target"
+
+        # Rank badge
+        rank_class = f"rank-{i + 1}" if i < 3 else "rank-other"
+
+        # Player label
+        num = f"#{opt.target.jersey_num}" if opt.target.jersey_num else ""
+        name = opt.target.name or f"ID:{opt.target.player_id}"
+
+        # Score color
+        sc = _score_color(opt.pass_score)
+
+        # Dimension bars
+        dimensions = _build_dimension_bars(opt)
+
+        card = html.Div(
+            id={"type": "option-card", "index": i},
+            className=card_class,
+            n_clicks=0,
+            children=[
+                # Header row
+                html.Div(
+                    className="option-header",
+                    children=[
+                        html.Div(
+                            className="d-flex align-items-center",
+                            children=[
+                                html.Div(
+                                    str(i + 1),
+                                    className=f"rank-badge {rank_class}",
+                                ),
+                                html.Span(
+                                    f"{num} {name}",
+                                    className="option-player",
+                                ),
+                                *(
+                                    [html.Span("ACTUAL", className="actual-tag")]
+                                    if is_actual
+                                    else []
+                                ),
+                            ],
+                        ),
+                        html.Span(
+                            f"{opt.pass_score:.1f}",
+                            className="option-score",
+                            style={"color": sc},
+                        ),
+                    ],
+                ),
+                # Dimension bars
+                *dimensions,
+            ],
+        )
+        children.append(card)
+
+    return children
+
+
+def _build_dimension_bars(opt) -> list:
+    """Build the 5 dimension mini-bars for a pass option."""
+    dims = [
+        ("Completion", opt.completion_probability, 1.0, f"{opt.completion_probability:.0%}", "#3498db"),
+        ("Zone Value", opt.zone_value, 0.45, f"{opt.zone_value:.3f}", "#9b59b6"),
+        ("Pressure", 1 - opt.receiving_pressure / 10, 1.0, f"{opt.receiving_pressure:.1f}/10", "#e67e22"),
+        ("Space", min(opt.space_available / 20, 1.0), 1.0, f"{opt.space_available:.1f}m", "#1abc9c"),
+        ("Penetration", opt.penetration_score, 1.0, f"{opt.penetration_score:.2f}", "#2ecc71"),
+    ]
+
+    rows = []
+    for label, fill_ratio, max_val, display, color in dims:
+        pct = max(0, min(100, fill_ratio * 100))
+        rows.append(
+            html.Div(
+                className="dimension-row",
+                children=[
+                    html.Span(label, className="dimension-label"),
+                    html.Div(
+                        className="dimension-bar-bg",
+                        children=[
+                            html.Div(
+                                className="dimension-bar-fill",
+                                style={
+                                    "width": f"{pct:.0f}%",
+                                    "backgroundColor": color,
+                                },
+                            ),
+                        ],
+                    ),
+                    html.Span(display, className="dimension-value"),
+                ],
+            )
+        )
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Entry Point
+# ---------------------------------------------------------------------------
+def main():
+    """Launch the Threader Dash app."""
+    print("🧵 Threader — Starting at http://127.0.0.1:8050")
+    app.run(debug=True, host="127.0.0.1", port=8050)
+
+
+if __name__ == "__main__":
+    main()

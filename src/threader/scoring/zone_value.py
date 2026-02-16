@@ -1,10 +1,9 @@
 """
-"""
 Project: Threader
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: zone_value.py
-Description: 
+Description:
     Zone value — xT (Expected Threat) grid lookup.
     Maps a pitch position to a threat value indicating how dangerous
     that location is for creating goals.
