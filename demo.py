@@ -1,7 +1,11 @@
-"""Threader Demo — Analyze a real pass from FIFA World Cup 2022.
-
-Usage:
-    uv run python demo.py
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: demo.py
+Description: 
+    Threader Demo — Analyze a real pass from FIFA World Cup 2022.
+    Usage: uv run python demo.py
 """
 
 from threader.analysis.analyzer import analyze_pass_event

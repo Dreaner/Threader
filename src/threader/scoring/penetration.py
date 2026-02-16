@@ -1,10 +1,14 @@
-"""Penetration score — how much forward progress does this pass achieve?
-
-Two sub-dimensions:
-  A. Forward distance (x-gain capped at 20m → score 1.0)
-  B. Defenders bypassed (each defender adds 0.15, capped at 0.5)
-
-Final score capped at 1.0.
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: penetration.py
+Description: 
+    Penetration score — how much forward progress does this pass achieve?
+    Two sub-dimensions:
+      A. Forward distance (x-gain capped at 20m → score 1.0)
+      B. Defenders bypassed (each defender adds 0.15, capped at 0.5)
+    Final score capped at 1.0.
 """
 
 from __future__ import annotations

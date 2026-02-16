@@ -1,4 +1,11 @@
-"""Tests for geometry utilities — distance and passing lane detection."""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: test_geometry.py
+Description: 
+    Tests for geometry utilities — distance and passing lane detection.
+"""
 
 import math
 

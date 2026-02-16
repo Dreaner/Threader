@@ -1,4 +1,11 @@
-"""Tests for completion probability scoring."""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: test_completion.py
+Description: 
+    Tests for completion probability scoring.
+"""
 
 import math
 

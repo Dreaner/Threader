@@ -1,4 +1,11 @@
-"""Basic distance and vector utilities."""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: distance.py
+Description: 
+    Basic distance and vector utilities.
+"""
 
 from __future__ import annotations
 

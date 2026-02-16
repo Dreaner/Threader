@@ -1,12 +1,16 @@
-"""Zone value — xT (Expected Threat) grid lookup.
-
-Maps a pitch position to a threat value indicating how dangerous
-that location is for creating goals.
-
-The xT grid uses pitch coordinates (0,0 at bottom-left), so PFF
-center-origin coordinates must be converted first.
-
-Grid: 12 columns (x-axis, defense→attack) × 8 rows (y-axis, bottom→top)
+"""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: zone_value.py
+Description: 
+    Zone value — xT (Expected Threat) grid lookup.
+    Maps a pitch position to a threat value indicating how dangerous
+    that location is for creating goals.
+    The xT grid uses pitch coordinates (0,0 at bottom-left), so PFF
+    center-origin coordinates must be converted first.
+    Grid: 12 columns (x-axis, defense→attack) × 8 rows (y-axis, bottom→top)
 """
 
 from __future__ import annotations

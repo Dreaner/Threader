@@ -1,7 +1,12 @@
-"""Passing lane obstruction detection.
-
-Determines whether defenders are blocking the passing lane between
-a passer and a potential receiver, and quantifies the degree of blocking.
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: passing_lane.py
+Description: 
+    Passing lane obstruction detection.
+    Determines whether defenders are blocking the passing lane between
+    a passer and a potential receiver, and quantifies the degree of blocking.
 """
 
 from __future__ import annotations

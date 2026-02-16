@@ -1,4 +1,11 @@
-"""Tests for the main analyzer."""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: test_analyzer.py
+Description: 
+    Tests for the main analyzer.
+"""
 
 from threader.analysis.analyzer import analyze_snapshot
 from threader.models import BallPosition, Player, Snapshot

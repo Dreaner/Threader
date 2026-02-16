@@ -1,4 +1,11 @@
-"""Tests for the overall Pass Score calculation."""
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: test_pass_score.py
+Description: 
+    Tests for the overall Pass Score calculation.
+"""
 
 from threader.models import Player
 from threader.scoring.pass_score import score_pass_option

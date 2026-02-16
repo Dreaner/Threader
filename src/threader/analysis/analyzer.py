@@ -1,7 +1,12 @@
-"""Main analysis entry point.
-
-Takes a snapshot and a passer, evaluates all possible pass targets,
-and returns ranked pass options.
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: analyzer.py
+Description: 
+    Main analysis entry point.
+    Takes a snapshot and a passer, evaluates all possible pass targets,
+    and returns ranked pass options.
 """
 
 from __future__ import annotations

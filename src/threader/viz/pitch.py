@@ -1,7 +1,12 @@
-"""Football pitch rendering with matplotlib.
-
-Draws a standard football pitch with accurate proportions.
-Supports PFF's center-origin coordinate system.
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: pitch.py
+Description: 
+    Football pitch rendering with matplotlib.
+    Draws a standard football pitch with accurate proportions.
+    Supports PFF's center-origin coordinate system.
 """
 
 from __future__ import annotations

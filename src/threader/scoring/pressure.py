@@ -1,7 +1,12 @@
-"""Receiving pressure — will the receiver be under pressure?
-
-Calculated from the weighted distance of the 3 nearest defenders.
-Range: 0 (no pressure) → 10 (extreme pressure).
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: pressure.py
+Description: 
+    Receiving pressure — will the receiver be under pressure?
+    Calculated from the weighted distance of the 3 nearest defenders.
+    Range: 0 (no pressure) → 10 (extreme pressure).
 """
 
 from __future__ import annotations

@@ -1,13 +1,17 @@
-"""Pass Score — the master scoring formula combining all 5 dimensions.
-
-Pass Score = (
-    completion_probability × zone_value +    # Expected value
-    penetration_score × 0.20 +               # Penetration bonus
-    space_available × 0.001 -                # Space bonus
-    (receiving_pressure / 10) × 0.15         # Pressure penalty
-) × 100
-
-Range: 0–100
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: pass_score.py
+Description: 
+    Pass Score — the master scoring formula combining all 5 dimensions.
+    Pass Score = (
+        completion_probability × zone_value +    # Expected value
+        penetration_score × 0.20 +               # Penetration bonus
+        space_available × 0.001 -                # Space bonus
+        (receiving_pressure / 10) × 0.15         # Pressure penalty
+    ) × 100
+    Range: 0–100
 """
 
 from __future__ import annotations

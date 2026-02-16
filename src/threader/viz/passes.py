@@ -1,10 +1,15 @@
-"""Pass options visualization — arrows, scores, and rankings on the pitch.
-
-Renders the analysis result on top of a pitch drawing, showing:
-  - Player positions (home/away colored)
-  - Pass option arrows (color-coded by rank)
-  - Pass Score labels
-  - The passer highlighted
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: passes.py
+Description: 
+    Pass options visualization — arrows, scores, and rankings on the pitch.
+    Renders the analysis result on top of a pitch drawing, showing:
+      - Player positions (home/away colored)
+      - Pass option arrows (color-coded by rank)
+      - Pass Score labels
+      - The passer highlighted
 """
 
 from __future__ import annotations

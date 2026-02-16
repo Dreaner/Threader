@@ -1,8 +1,13 @@
-"""Completion probability — can this pass reach its target?
-
-Factors:
-  1. Distance decay (longer passes are harder)
-  2. Defender blocking (passing lane obstruction)
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: completion.py
+Description: 
+    Completion probability — can this pass reach its target?
+    Factors:
+      1. Distance decay (longer passes are harder)
+      2. Defender blocking (passing lane obstruction)
 """
 
 from __future__ import annotations

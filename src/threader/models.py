@@ -1,8 +1,13 @@
-"""Core data models for Threader pass analysis.
-
-All coordinates use PFF's center-origin system:
-  x ∈ [-52.5, 52.5]  (negative = left / defensive, positive = right / attacking)
-  y ∈ [-34, 34]       (negative = bottom, positive = top)
+"""
+Project: Threader
+File Created: 2026-02-16 23:11:04
+Author: Xingnan Zhu
+File Name: models.py
+Description: 
+    Core data models for Threader pass analysis.
+    All coordinates use PFF's center-origin system:
+      x ∈ [-52.5, 52.5]  (negative = left / defensive, positive = right / attacking)
+      y ∈ [-34, 34]       (negative = bottom, positive = top)
 """
 
 from __future__ import annotations
