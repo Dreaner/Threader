@@ -33,6 +33,7 @@ def analyze_snapshot(
     """
     teammates = snapshot.teammates(passer)
     defenders = snapshot.opponents(passer)
+    attack_dir = snapshot.attack_direction(passer)
 
     options = [
         score_pass_option(
@@ -41,6 +42,7 @@ def analyze_snapshot(
             defenders=defenders,
             pitch_length=snapshot.pitch_length,
             pitch_width=snapshot.pitch_width,
+            attack_direction=attack_dir,
         )
         for teammate in teammates
     ]

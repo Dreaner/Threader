@@ -517,7 +517,7 @@ def _build_dimension_bars(opt) -> list:
         ("Zone Value", opt.zone_value, 0.45, f"{opt.zone_value:.3f}", "#9b59b6"),
         ("Pressure", 1 - opt.receiving_pressure / 10, 1.0, f"{opt.receiving_pressure:.1f}/10", "#e67e22"),
         ("Space", min(opt.space_available / 20, 1.0), 1.0, f"{opt.space_available:.1f}m", "#1abc9c"),
-        ("Penetration", opt.penetration_score, 1.0, f"{opt.penetration_score:.2f}", "#2ecc71"),
+        ("Penetration", max(0, opt.penetration_score), 1.0, f"{opt.penetration_score:.2f}", "#2ecc71"),
     ]
 
     rows = []

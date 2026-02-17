@@ -77,14 +77,20 @@ Scenario: De Bruyne receives the ball at the center circle
 
 ```python
 Pass Score = (
-    completion_probability × zone_value +          # Expected value
-    penetration_score × 0.20 +                     # Penetration bonus
-    space_available × 0.001 -                      # Space bonus
-    (receiving_pressure / 10) × 0.15               # Pressure penalty
-) × 100
+    completion_probability × zone_value × 1.5 +    # Expected value (amplified)
+    penetration_score × 0.20 +                     # Penetration bonus/drag
+    space_available × 0.001                        # Space bonus (capped at 15m)
+) × (1.0 − pressure/10 × 0.20)                    # Pressure as multiplier
+  × 100
 ```
 
 **Range:** 0–100
+
+**Key changes (v1.1):**
+- `zone_value` amplified ×1.5 to widen gap between attacking and defensive positions
+- Pressure switched from additive penalty to **multiplicative** scaling (max 20% reduction)
+- Penetration now returns negative for backward passes (mild drag)
+- Space capped at 15m upstream to prevent isolated players (e.g. GK) from getting excessive bonus
 
 ---
 
@@ -166,7 +172,7 @@ XT_GRID[col][row]  # col: 0-11, row: 0-7
 
 **Future improvements:**
 - Use a more granular xT model (e.g., Karun Singh's original version)
-- Account for the team's attacking direction (use `stadiumMetadata.teamAttackingDirection`)
+- ~~Account for the team's attacking direction~~ ✅ Done (v1.1): Uses `homeTeamStartLeft` from metadata + period to determine `attack_direction` (+1.0 or -1.0). The x coordinate is flipped in `zone_value()` and `penetration_score()` when the team attacks left.
 
 ---
 
@@ -204,16 +210,17 @@ pressure = min(10.0, pressure)
 
 **Goal:** How much room does the receiver have after receiving the ball?
 
-**Calculation:** Distance to the nearest opponent (in meters)
+**Calculation:** Distance to the nearest opponent (in meters), capped at 15m
 
 ```python
 opponents = [p for p in all_players if p.team != receiver.team]
-space = min(distance(receiver, opp) for opp in opponents)
+space = min(15.0, min(distance(receiver, opp) for opp in opponents))
 ```
 
 **Role:**
 - More space = more options after receiving the ball
 - Small weight in Pass Score (×0.001), acts as a fine-tuning factor
+- Capped at 15m to prevent isolated/deep players (GK) from getting excessive bonus
 
 ---
 
@@ -228,7 +235,8 @@ space = min(distance(receiver, opp) for opp in opponents)
 x_gain = receiver.x - passer.x
 
 if x_gain <= 0:
-    forward_score = 0  # Sideways / backward pass
+    # Mild backward drag: max -0.3 at 40m back
+    forward_score = max(-0.3, x_gain / 40.0)
 else:
     forward_score = min(1.0, x_gain / 20.0)  # 20m forward = max score
 ```
@@ -246,13 +254,14 @@ penetration_bonus = min(0.5, defenders_passed × 0.15)
 **Final penetration score:**
 ```python
 penetration = forward_score + penetration_bonus
-penetration = min(1.0, penetration)  # Capped at 1.0
+penetration = max(-0.3, min(1.0, penetration))  # Range: [-0.3, 1.0]
 ```
 
 **Design rationale:**
 - Forward passes are inherently more valuable (nature of attacking play)
 - Bypassing defenders = disrupting the opponent's defensive shape
 - Cap at 1.0 to avoid over-rewarding
+- Backward passes receive a mild drag (down to -0.3) to discourage backpasses to GK etc.
 
 ---
 
@@ -510,7 +519,11 @@ Human: Retains artistic judgment + tactical intent
 ## 📌 Outstanding Technical Debt
 
 **Scoring weight optimization:**
-- [ ] Current weights (0.20, 0.15, etc.) are empirical — need tuning with real data
+- [x] Backward pass penalty added (penetration drag, v1.1)
+- [x] Pressure changed from additive to multiplicative (v1.1)
+- [x] Space bonus capped at 15m (v1.1)
+- [x] Zone value amplified ×1.5 (v1.1)
+- [ ] Current weights (0.20, etc.) are empirical — need tuning with real data
 - [ ] Different zones (defensive vs attacking) may require different weights
 
 **xT model improvement:**
@@ -527,6 +540,6 @@ Human: Retains artistic judgment + tactical intent
 
 ---
 
-*Document version: v1.0*  
-*Last updated: 2026-02-16*  
+*Document version: v1.1*  
+*Last updated: 2026-02-17*  
 *Project: Threader — AlphaGo-inspired Pass Analysis*

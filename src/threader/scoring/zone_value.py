@@ -68,16 +68,28 @@ def zone_value(
     y: float,
     pitch_length: float = 105.0,
     pitch_width: float = 68.0,
+    *,
+    attack_direction: float = 1.0,
 ) -> float:
     """Look up the xT value for a PFF center-origin coordinate.
 
     Converts from PFF coordinates (center-origin) to pitch coordinates
     (0,0 at bottom-left) before looking up the grid.
 
+    Args:
+        attack_direction: +1.0 if the team attacks towards positive-x,
+            -1.0 if towards negative-x.  When -1.0, the x coordinate
+            is flipped so column 11 (attacking) maps to the team's
+            actual attacking end.
+
     Returns a value in [0, ~0.45].
     """
+    # Flip x when team attacks towards negative-x, so the xT grid
+    # always maps higher columns to the team's actual attacking end.
+    effective_x = x * attack_direction
+
     # PFF center-origin → pitch coordinates (0,0 at bottom-left)
-    pitch_x = x + pitch_length / 2.0
+    pitch_x = effective_x + pitch_length / 2.0
     pitch_y = y + pitch_width / 2.0
 
     # Grid index lookup
