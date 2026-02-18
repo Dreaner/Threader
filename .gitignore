@@ -208,3 +208,4 @@ __marimo__/
 
 # Match data (large binary/JSON files)
 data/
+.validation_cache/

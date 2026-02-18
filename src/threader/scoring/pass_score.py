@@ -22,12 +22,54 @@ Description:
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+
 from threader.models import PassOption, Player
 from threader.scoring.completion import completion_probability
 from threader.scoring.penetration import penetration_score
 from threader.scoring.pressure import receiving_pressure
 from threader.scoring.space import space_available
 from threader.scoring.zone_value import zone_value
+
+
+@dataclass(frozen=True)
+class ScoringWeights:
+    """Adjustable weights for the Pass Score formula.
+
+    Used by sensitivity analysis to sweep parameters.
+    Default values match the production formula (v1.1).
+    """
+
+    zone_amplifier: float = 1.5
+    penetration_weight: float = 0.20
+    space_weight: float = 0.001
+    pressure_scaling: float = 0.20
+
+
+# Default weights — used when no overrides are supplied.
+DEFAULT_WEIGHTS = ScoringWeights()
+
+
+def compute_pass_score(
+    comp: float,
+    zone: float,
+    pressure: float,
+    space: float,
+    penetration: float,
+    weights: ScoringWeights = DEFAULT_WEIGHTS,
+) -> float:
+    """Compute the final Pass Score (0–100) from pre-calculated dimensions.
+
+    This is the pure formula, separated for reuse in sensitivity analysis
+    without re-computing the individual dimension scores.
+    """
+    base_score = (
+        comp * zone * weights.zone_amplifier
+        + penetration * weights.penetration_weight
+        + space * weights.space_weight
+    )
+    pressure_factor = 1.0 - (pressure / 10.0) * weights.pressure_scaling
+    return max(0.0, base_score * pressure_factor * 100.0)
 
 
 def score_pass_option(
@@ -37,6 +79,7 @@ def score_pass_option(
     pitch_length: float = 105.0,
     pitch_width: float = 68.0,
     attack_direction: float = 1.0,
+    weights: ScoringWeights | None = None,
 ) -> PassOption:
     """Score a single pass option from passer to target.
 
@@ -44,10 +87,14 @@ def score_pass_option(
         attack_direction: +1.0 if the passer's team attacks towards
             positive-x, -1.0 if towards negative-x.  Used to orient
             zone_value and penetration_score correctly.
+        weights: Optional ScoringWeights override for sensitivity analysis.
+            When None, uses DEFAULT_WEIGHTS.
 
     Returns a PassOption with all 5 dimension scores and the
     final Pass Score (0–100).
     """
+    w = weights or DEFAULT_WEIGHTS
+
     comp = completion_probability(passer, target, defenders)
     zone = zone_value(
         target.x, target.y, pitch_length, pitch_width,
@@ -60,19 +107,7 @@ def score_pass_option(
         attack_direction=attack_direction,
     )
 
-    # Combine expected value + bonus terms
-    base_score = (
-        comp * zone * 1.5           # Expected value (amplified)
-        + penetration * 0.20        # Penetration bonus/drag
-        + space * 0.001             # Space bonus
-    )
-
-    # Pressure as a multiplicative dampener (max 20% reduction)
-    pressure_factor = 1.0 - (pressure / 10.0) * 0.20
-    raw_score = base_score * pressure_factor
-
-    # Scale to 0–100, clamp to non-negative
-    final_score = max(0.0, raw_score * 100.0)
+    final_score = compute_pass_score(comp, zone, pressure, space, penetration, w)
 
     return PassOption(
         target=target,
