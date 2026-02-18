@@ -51,10 +51,10 @@ class TestPassScore:
     def test_unblocked_beats_blocked(self):
         """An unblocked pass should score higher than a blocked one."""
         passer = _player(0, 0)
-        target = _player(20, 0, pid=2)
+        target = _player(0, 15, pid=2)  # Lateral pass — no forward gain
 
         no_block = [_player(10, 30, pid=3, tid=2)]  # Far from lane
-        blocked = [_player(10, 0.5, pid=3, tid=2)]   # On the lane
+        blocked = [_player(0, 7, pid=3, tid=2)]      # On the lane
 
         score_clear = score_pass_option(passer, target, no_block)
         score_blocked = score_pass_option(passer, target, blocked)

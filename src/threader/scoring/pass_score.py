@@ -6,10 +6,10 @@ File Name: pass_score.py
 Description: 
     Pass Score — the master scoring formula combining all 5 dimensions.
     Pass Score = (
-        completion_probability × zone_value × 1.5 +  # Expected value (amplified)
-        penetration_score × 0.20 +                   # Penetration bonus/drag
-        space_available × 0.001                      # Space bonus (capped at 15m)
-    ) × (1.0 − pressure/10 × 0.20)                  # Pressure as multiplier
+        completion_probability × zone_value × 4.27 +  # Expected value (amplified)
+        penetration_score × 1.00 +                    # Penetration bonus/drag
+        space_available × 0.0001                      # Space bonus (capped at 15m)
+    ) × (1.0 − pressure/10 × 0.01)                   # Pressure as multiplier
       × 100
     Range: 0–100
     
@@ -18,6 +18,16 @@ Description:
     - Pressure switched from additive penalty to multiplicative scaling
     - Penetration now returns negative for backward passes (mild drag)
     - Space capped at 15m upstream
+
+    Key changes (v1.2 — Spearman-optimized weights):
+    - Weights optimized via scipy.optimize.differential_evolution
+      directly maximizing Spearman ρ(Pass Score, ΔxT) on 64-match dataset
+    - zone_amplifier 1.5 → 4.27 (+185%): zone value is the dominant signal
+    - penetration_weight 0.20 → 1.00 (+400%): forward progress matters more
+    - space_weight 0.001 → 0.0001 (−90%): space is a minor tiebreaker
+    - pressure_scaling 0.20 → 0.01 (−95%): pressure has minimal effect on ΔxT
+    - Test Spearman ρ: 0.6318 → 0.6540 (+0.022)
+    - Test AUC (lines-broken): 0.7533 → 0.7675 (+0.014)
 """
 
 from __future__ import annotations
@@ -37,13 +47,14 @@ class ScoringWeights:
     """Adjustable weights for the Pass Score formula.
 
     Used by sensitivity analysis to sweep parameters.
-    Default values match the production formula (v1.1).
+    Default values are Spearman-optimized (v1.2) via
+    ``scripts/optimize_weights.py``.
     """
 
-    zone_amplifier: float = 1.5
-    penetration_weight: float = 0.20
-    space_weight: float = 0.001
-    pressure_scaling: float = 0.20
+    zone_amplifier: float = 4.271413
+    penetration_weight: float = 0.999668
+    space_weight: float = 0.000100
+    pressure_scaling: float = 0.010001
 
 
 # Default weights — used when no overrides are supplied.
@@ -69,7 +80,7 @@ def compute_pass_score(
         + space * weights.space_weight
     )
     pressure_factor = 1.0 - (pressure / 10.0) * weights.pressure_scaling
-    return max(0.0, base_score * pressure_factor * 100.0)
+    return max(0.0, min(100.0, base_score * pressure_factor * 100.0))
 
 
 def score_pass_option(
