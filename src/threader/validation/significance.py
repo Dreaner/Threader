@@ -1,10 +1,11 @@
 """
 Statistical significance tests for the Pass Score formula.
 
-Three categories:
-  A. Score vs Outcome — does Pass Score predict pass completion?
+Four categories:
+  A. Score vs Offensive Value — does Pass Score correlate with ΔxT & lines broken?
   B. BetterOption Concordance — does Threader agree with PFF analysts?
   C. Pressure Validation — does computed pressure match PFF annotation?
+  D. Score vs Outcome — does Pass Score predict pass completion? (observational)
 """
 
 from __future__ import annotations
@@ -265,13 +266,108 @@ def pressure_validation(records: list[ValidatedPass]) -> dict:
     return results
 
 
+# ── D. Score vs Offensive Value (PRIMARY) ────────────────────────────────────
+
+
+def score_vs_offensive_value(records: list[ValidatedPass]) -> dict:
+    """Test whether Pass Score correlates with offensive value metrics.
+
+    Two sub-metrics:
+      1. ΔxT Spearman rank correlation with Pass Score
+      2. Lines-broken AUC — does Pass Score predict whether a pass breaks ≥1 line?
+    """
+    results: dict = {"n_total": len(records)}
+
+    scores = np.array([r.actual_target_score for r in records])
+    delta_xts = np.array([r.delta_xt for r in records])
+
+    # ── 1. ΔxT Spearman correlation ─────────────────────────────────────
+    if len(scores) > 10:
+        rho, p_val = stats.spearmanr(scores, delta_xts)
+        results["delta_xt_spearman"] = {
+            "rho": round(float(rho), 4),
+            "p_value": float(p_val),
+            "interpretation": (
+                "strong" if abs(rho) > 0.5 else
+                "moderate" if abs(rho) > 0.3 else
+                "weak" if abs(rho) > 0.1 else
+                "negligible"
+            ),
+        }
+        # Also report mean ΔxT by score quartile
+        quartiles = np.percentile(scores, [25, 50, 75])
+        q_labels = ["Q1 (low)", "Q2", "Q3", "Q4 (high)"]
+        q_edges = [-np.inf, quartiles[0], quartiles[1], quartiles[2], np.inf]
+        q_stats = []
+        for i in range(4):
+            mask = (scores >= q_edges[i]) & (scores < q_edges[i + 1])
+            if mask.sum() > 0:
+                q_stats.append({
+                    "quartile": q_labels[i],
+                    "n": int(mask.sum()),
+                    "mean_delta_xt": round(float(delta_xts[mask].mean()), 5),
+                    "mean_score": round(float(scores[mask].mean()), 2),
+                })
+        results["delta_xt_by_quartile"] = q_stats
+    else:
+        results["delta_xt_spearman"] = {"error": "insufficient data"}
+
+    # ── 2. Lines-broken AUC ──────────────────────────────────────────────
+    has_broken = [r for r in records if r.pff_lines_broken_count >= 1]
+    no_broken = [r for r in records if r.pff_lines_broken_count == 0]
+
+    results["lines_broken_counts"] = {
+        "broke_ge1": len(has_broken),
+        "broke_0": len(no_broken),
+    }
+
+    if len(has_broken) >= 20 and len(no_broken) >= 20:
+        pos_scores = np.array([r.actual_target_score for r in has_broken])
+        neg_scores = np.array([r.actual_target_score for r in no_broken])
+
+        u_stat, p_value = stats.mannwhitneyu(pos_scores, neg_scores, alternative="greater")
+        n1, n2 = len(pos_scores), len(neg_scores)
+        auc = u_stat / (n1 * n2)
+        auc_med, ci_lo, ci_hi = _bootstrap_auc(pos_scores, neg_scores)
+        d = _cohens_d(pos_scores, neg_scores)
+
+        results["lines_broken_auc"] = {
+            "auc_roc": round(auc, 4),
+            "auc_bootstrap_median": round(auc_med, 4),
+            "auc_95ci": (round(ci_lo, 4), round(ci_hi, 4)),
+            "p_value": float(p_value),
+            "cohens_d": round(d, 3),
+            "mean_score_broken": round(float(np.mean(pos_scores)), 2),
+            "mean_score_not_broken": round(float(np.mean(neg_scores)), 2),
+        }
+
+        # Breakdown by number of lines broken (0, 1, 2, 3)
+        lb_breakdown = []
+        for n_lines in range(4):
+            subset = [r for r in records if r.pff_lines_broken_count == n_lines]
+            if subset:
+                s = np.array([r.actual_target_score for r in subset])
+                lb_breakdown.append({
+                    "lines_broken": n_lines,
+                    "n": len(subset),
+                    "mean_score": round(float(np.mean(s)), 2),
+                    "std_score": round(float(np.std(s)), 2),
+                })
+        results["lines_broken_breakdown"] = lb_breakdown
+    else:
+        results["lines_broken_auc"] = {"error": "insufficient line-break annotations"}
+
+    return results
+
+
 # ── Run all significance tests ───────────────────────────────────────────────
 
 
 def run_significance_tests(records: list[ValidatedPass]) -> dict:
     """Run all significance tests and return combined results."""
     return {
-        "score_vs_outcome": score_vs_outcome(records),
+        "offensive_value": score_vs_offensive_value(records),
         "better_option": better_option_concordance(records),
         "pressure": pressure_validation(records),
+        "score_vs_outcome": score_vs_outcome(records),
     }

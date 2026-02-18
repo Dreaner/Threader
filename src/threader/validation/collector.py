@@ -15,6 +15,7 @@ from pathlib import Path
 from threader.analysis.analyzer import analyze_pass_event
 from threader.data.events import extract_pass_events
 from threader.models import AnalysisResult, PassEvent, PassOption
+from threader.scoring.zone_value import zone_value
 
 
 # ---------------------------------------------------------------------------
@@ -68,6 +69,12 @@ class ValidatedPass:
     pitch_width: float = 68.0
     attack_direction: float = 1.0
 
+    # ── Offensive-value fields (v2) ─────────────────────────────────────
+    pff_lines_broken: str | None = None      # raw PFF linesBrokenType ("A","M","D","MD",…)
+    pff_lines_broken_count: int = 0          # len(linesBrokenType) or 0
+    passer_zone: float = 0.0                 # xT at passer location
+    delta_xt: float = 0.0                    # zone_value(target) − zone_value(passer)
+
 
 def _build_validated_pass(
     pe: PassEvent,
@@ -107,6 +114,23 @@ def _build_validated_pass(
     snapshot = pe.snapshot
     attack_dir = snapshot.attack_direction(result.passer)
 
+    # ── Offensive-value fields (v2) ─────────────────────────────────────
+    passer_xt = zone_value(
+        result.passer.x, result.passer.y,
+        snapshot.pitch_length, snapshot.pitch_width,
+        attack_direction=attack_dir,
+    )
+    target_player = actual_option.target
+    target_xt = zone_value(
+        target_player.x, target_player.y,
+        snapshot.pitch_length, snapshot.pitch_width,
+        attack_direction=attack_dir,
+    )
+    delta = target_xt - passer_xt
+
+    lb_raw = pe.lines_broken  # e.g. "MD", "A", None
+    lb_count = len(lb_raw) if lb_raw else 0
+
     return ValidatedPass(
         match_id=pe.game_id,
         event_id=pe.game_event_id,
@@ -134,6 +158,10 @@ def _build_validated_pass(
         pitch_length=snapshot.pitch_length,
         pitch_width=snapshot.pitch_width,
         attack_direction=attack_dir,
+        pff_lines_broken=lb_raw,
+        pff_lines_broken_count=lb_count,
+        passer_zone=passer_xt,
+        delta_xt=delta,
     )
 
 
