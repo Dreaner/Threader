@@ -26,8 +26,10 @@ import dash_bootstrap_components as dbc
 from threader.analysis.analyzer import analyze_pass_event
 from threader.data.events import extract_pass_events
 from threader.data.metadata import load_match_info
+from threader.data.tracking_frames import get_animation_frames_cached
 from threader.models import AnalysisResult, PassEvent
-from threader.viz.plotly_passes import build_analysis_figure
+from threader.viz.plotly_animation import build_animation_figure
+from threader.viz.plotly_passes import build_analysis_figure as build_static_figure
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -201,13 +203,27 @@ def _build_main() -> html.Div:
             ),
             # Right: Analysis panel
             html.Div(
-                id="analysis-panel",
                 className="analysis-panel",
                 children=[
+                    html.Button(
+                        id="play-animation-btn",
+                        className="play-animation-btn",
+                        n_clicks=0,
+                        style={"display": "none"},
+                        children=[
+                            html.Span("▶", className="play-icon"),
+                            html.Span("Play Pass", className="play-label"),
+                        ],
+                    ),
                     html.Div(
-                        "Select a match and pass event to begin",
-                        className="loading-placeholder",
-                    )
+                        id="analysis-panel",
+                        children=[
+                            html.Div(
+                                "Select a match and pass event to begin",
+                                className="loading-placeholder",
+                            )
+                        ],
+                    ),
                 ],
             ),
         ],
@@ -226,6 +242,8 @@ app.layout = html.Div(
         # Hidden stores
         dcc.Store(id="selected-option-idx", data=None),
         dcc.Store(id="analysis-cache", data=None),
+        dcc.Store(id="animation-loading", data=False),
+        dcc.Store(id="autoplay-signal", data=0),
     ],
 )
 
@@ -233,6 +251,50 @@ app.layout = html.Div(
 # ---------------------------------------------------------------------------
 # Callbacks
 # ---------------------------------------------------------------------------
+
+# Auto-play animation when the figure loads with frames
+app.clientside_callback(
+    """
+    function(signal) {
+        if (!signal) return window.dash_clientside.no_update;
+        // Wait for Plotly to finish rendering the new figure
+        setTimeout(function() {
+            var gd = document.getElementById('pitch-graph');
+            if (gd && gd._fullLayout && gd._transitionData &&
+                gd._transitionData._frames &&
+                gd._transitionData._frames.length > 0) {
+                Plotly.animate('pitch-graph', null, {
+                    frame: {duration: 100, redraw: true},
+                    transition: {duration: 80},
+                    fromcurrent: true,
+                    mode: 'immediate'
+                });
+            }
+        }, 300);
+        return window.dash_clientside.no_update;
+    }
+    """,
+    Output("autoplay-signal", "data", allow_duplicate=True),
+    Input("autoplay-signal", "data"),
+    prevent_initial_call=True,
+)
+
+# Instant loading feedback when Play Pass is clicked (before server round-trip)
+app.clientside_callback(
+    """
+    function(n_clicks) {
+        if (!n_clicks) return [window.dash_clientside.no_update,
+                              window.dash_clientside.no_update];
+        var btn = document.getElementById('play-animation-btn');
+        if (btn) btn.classList.add('loading');
+        return [true, "Loading animation..."];
+    }
+    """,
+    Output("play-animation-btn", "disabled", allow_duplicate=True),
+    Output("animation-loading", "data", allow_duplicate=True),
+    Input("play-animation-btn", "n_clicks"),
+    prevent_initial_call=True,
+)
 
 @callback(
     Output("pass-selector", "options"),
@@ -264,6 +326,7 @@ def update_pass_list(game_id: str):
     Output("pitch-graph", "figure"),
     Output("analysis-panel", "children"),
     Output("analysis-cache", "data"),
+    Output("play-animation-btn", "style"),
     Input("pass-selector", "value"),
     Input("top-n-selector", "value"),
     Input("selected-option-idx", "data"),
@@ -285,7 +348,7 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
             "Select a match and pass event to begin",
             className="loading-placeholder",
         )
-        return empty_fig, placeholder, None
+        return empty_fig, placeholder, None, {"display": "none"}
 
     # Load data
     passes = _load_passes(game_id)
@@ -300,7 +363,7 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
         f"{match_info.home_team.short_name} vs {match_info.away_team.short_name} — "
         f"{pass_event.passer_name}"
     )
-    fig = build_analysis_figure(
+    fig = build_static_figure(
         result,
         top_n=top_n,
         show_all=True,
@@ -322,7 +385,7 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
         "n_options": len(result.ranked_options),
     }
 
-    return fig, panel, cache
+    return fig, panel, cache, {"display": "block"}
 
 
 @callback(
@@ -340,6 +403,55 @@ def handle_card_click(n_clicks_list, current_idx):
     if clicked_idx == current_idx:
         return None
     return clicked_idx
+
+
+@callback(
+    Output("pitch-graph", "figure", allow_duplicate=True),
+    Output("animation-loading", "data", allow_duplicate=True),
+    Output("autoplay-signal", "data"),
+    Output("play-animation-btn", "disabled", allow_duplicate=True),
+    Output("play-animation-btn", "className"),
+    Input("play-animation-btn", "n_clicks"),
+    State("match-selector", "value"),
+    State("pass-selector", "value"),
+    prevent_initial_call=True,
+)
+def play_animation(n_clicks, game_id, pass_idx):
+    """Load tracking data and build an animated pitch figure."""
+    if not n_clicks or game_id is None or pass_idx is None:
+        return no_update, False, no_update, False, "play-animation-btn"
+
+    # Load pass event and match info
+    passes = _load_passes(game_id)
+    pass_event = passes[int(pass_idx)]
+    match_info = _get_match_info(game_id)
+
+    # Extract animation frames from tracking data (streaming, cached)
+    frames = get_animation_frames_cached(
+        game_id=game_id,
+        pass_event=pass_event,
+        period_start_times=match_info.period_start_times,
+    )
+
+    if frames is None or len(frames) == 0:
+        return no_update, False, no_update, False, "play-animation-btn"
+
+    # Build animation figure
+    title = (
+        f"{match_info.home_team.short_name} vs {match_info.away_team.short_name} — "
+        f"{pass_event.passer_name} → {pass_event.target_name} "
+        f"({'✓' if pass_event.is_complete else '✗'})"
+    )
+    fig = build_animation_figure(
+        frames,
+        pitch_length=pass_event.snapshot.pitch_length,
+        pitch_width=pass_event.snapshot.pitch_width,
+        title=title,
+    )
+    fig.update_layout(height=None, autosize=True)
+
+    import time as _t
+    return fig, False, _t.time(), False, "play-animation-btn"
 
 
 # ---------------------------------------------------------------------------
@@ -553,7 +665,7 @@ def _build_dimension_bars(opt) -> list:
 def main():
     """Launch the Threader Dash app."""
     print("🧵 Threader — Starting at http://127.0.0.1:8050")
-    app.run(debug=True, host="127.0.0.1", port=8050)
+    app.run(debug=True, use_reloader=False, host="127.0.0.1", port=8050)
 
 
 if __name__ == "__main__":

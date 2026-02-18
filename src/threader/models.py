@@ -147,8 +147,11 @@ class PassEvent:
     better_option_player_id: int | None
     better_option_player_name: str | None
 
+    # High-precision video timestamp (seconds) for tracking data alignment
+    event_time: float | None = None
+
     # The full snapshot at the moment of this pass
-    snapshot: Snapshot
+    snapshot: Snapshot = field(default=None)  # type: ignore[assignment]
 
     @property
     def is_complete(self) -> bool:
