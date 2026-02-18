@@ -20,7 +20,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import dash
-from dash import Input, Output, State, callback, ctx, dcc, html, no_update
+from dash import Input, Output, State, ctx, dcc, html, no_update
 import dash_bootstrap_components as dbc
 
 from threader.analysis.analyzer import analyze_pass_event
@@ -244,6 +244,7 @@ app.layout = html.Div(
         dcc.Store(id="analysis-cache", data=None),
         dcc.Store(id="animation-loading", data=False),
         dcc.Store(id="autoplay-signal", data=0),
+        dcc.Store(id="autoplay-done", data=0),  # dummy output for autoplay clientside callback
     ],
 )
 
@@ -274,29 +275,30 @@ app.clientside_callback(
         return window.dash_clientside.no_update;
     }
     """,
-    Output("autoplay-signal", "data", allow_duplicate=True),
+    Output("autoplay-done", "data"),
     Input("autoplay-signal", "data"),
     prevent_initial_call=True,
 )
 
 # Instant loading feedback when Play Pass is clicked (before server round-trip)
+# Returns disabled + className through Dash so Dash tracks the state properly.
 app.clientside_callback(
     """
     function(n_clicks) {
         if (!n_clicks) return [window.dash_clientside.no_update,
+                              window.dash_clientside.no_update,
                               window.dash_clientside.no_update];
-        var btn = document.getElementById('play-animation-btn');
-        if (btn) btn.classList.add('loading');
-        return [true, "Loading animation..."];
+        return [true, "play-animation-btn loading", "loading"];
     }
     """,
-    Output("play-animation-btn", "disabled", allow_duplicate=True),
-    Output("animation-loading", "data", allow_duplicate=True),
+    Output("play-animation-btn", "disabled"),
+    Output("play-animation-btn", "className"),
+    Output("animation-loading", "data"),
     Input("play-animation-btn", "n_clicks"),
     prevent_initial_call=True,
 )
 
-@callback(
+@app.callback(
     Output("pass-selector", "options"),
     Output("pass-selector", "value"),
     Input("match-selector", "value"),
@@ -322,15 +324,18 @@ def update_pass_list(game_id: str):
     return options, default
 
 
-@callback(
+@app.callback(
     Output("pitch-graph", "figure"),
     Output("analysis-panel", "children"),
     Output("analysis-cache", "data"),
     Output("play-animation-btn", "style"),
+    Output("play-animation-btn", "disabled", allow_duplicate=True),
+    Output("play-animation-btn", "className", allow_duplicate=True),
     Input("pass-selector", "value"),
     Input("top-n-selector", "value"),
     Input("selected-option-idx", "data"),
     State("match-selector", "value"),
+    prevent_initial_call="initial_duplicate",
 )
 def update_analysis(pass_idx, top_n, selected_idx, game_id):
     """Main callback: render pitch and analysis panel."""
@@ -348,7 +353,7 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
             "Select a match and pass event to begin",
             className="loading-placeholder",
         )
-        return empty_fig, placeholder, None, {"display": "none"}
+        return empty_fig, placeholder, None, {"display": "none"}, False, "play-animation-btn"
 
     # Load data
     passes = _load_passes(game_id)
@@ -385,10 +390,10 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
         "n_options": len(result.ranked_options),
     }
 
-    return fig, panel, cache, {"display": "block"}
+    return fig, panel, cache, {"display": "block"}, False, "play-animation-btn"
 
 
-@callback(
+@app.callback(
     Output("selected-option-idx", "data"),
     Input({"type": "option-card", "index": dash.ALL}, "n_clicks"),
     State("selected-option-idx", "data"),
@@ -405,12 +410,12 @@ def handle_card_click(n_clicks_list, current_idx):
     return clicked_idx
 
 
-@callback(
+@app.callback(
     Output("pitch-graph", "figure", allow_duplicate=True),
     Output("animation-loading", "data", allow_duplicate=True),
-    Output("autoplay-signal", "data"),
+    Output("autoplay-signal", "data", allow_duplicate=True),
     Output("play-animation-btn", "disabled", allow_duplicate=True),
-    Output("play-animation-btn", "className"),
+    Output("play-animation-btn", "className", allow_duplicate=True),
     Input("play-animation-btn", "n_clicks"),
     State("match-selector", "value"),
     State("pass-selector", "value"),
