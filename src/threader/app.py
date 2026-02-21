@@ -28,7 +28,7 @@ from threader.data.events import extract_pass_events
 from threader.data.metadata import load_match_info
 from threader.data.tracking_frames import get_animation_frames_cached
 from threader.models import AnalysisResult, PassEvent
-from threader.viz.plotly_animation import build_animation_figure
+from threader.viz.plotly_animation_3d import build_animation_figure_3d
 from threader.viz.plotly_passes import build_analysis_figure as build_static_figure
 
 # ---------------------------------------------------------------------------
@@ -447,7 +447,7 @@ def play_animation(n_clicks, game_id, pass_idx):
         f"{pass_event.passer_name} → {pass_event.target_name} "
         f"({'✓' if pass_event.is_complete else '✗'})"
     )
-    fig = build_animation_figure(
+    fig = build_animation_figure_3d(
         frames,
         pitch_length=pass_event.snapshot.pitch_length,
         pitch_width=pass_event.snapshot.pitch_width,

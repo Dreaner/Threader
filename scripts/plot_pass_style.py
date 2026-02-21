@@ -24,6 +24,10 @@ Usage:
     uv run python scripts/plot_pass_style.py
     uv run python scripts/plot_pass_style.py --min-passes 30
     uv run python scripts/plot_pass_style.py --save pass_style.png
+    uv run python scripts/plot_pass_style.py --position M   # 中场
+    uv run python scripts/plot_pass_style.py --position F   # 前锋
+    uv run python scripts/plot_pass_style.py --position D   # 后卫
+    uv run python scripts/plot_pass_style.py --position GK  # 门将
 """
 
 from __future__ import annotations
