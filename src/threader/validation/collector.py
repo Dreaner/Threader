@@ -75,6 +75,14 @@ class ValidatedPass:
     passer_zone: float = 0.0                 # xT at passer location
     delta_xt: float = 0.0                    # zone_value(target) − zone_value(passer)
 
+    # ── Team-context fields (v3) ─────────────────────────────────────────
+    # Mean xT of passer's outfield teammates (GK excluded).
+    # Required for correct re-scoring when sweeping relative_zone_weight.
+    # NOTE: actual_target_zone stores raw (unadjusted) xT when collected
+    # with DEFAULT_WEIGHTS (relative_zone_weight=0.0), enabling correct
+    # formula replay: adj = raw + alpha * (raw - team_mean_xT).
+    team_mean_xT: float | None = None
+
 
 def _build_validated_pass(
     pe: PassEvent,
@@ -162,6 +170,7 @@ def _build_validated_pass(
         pff_lines_broken_count=lb_count,
         passer_zone=passer_xt,
         delta_xt=delta,
+        team_mean_xT=result.team_mean_xT,
     )
 
 

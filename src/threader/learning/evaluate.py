@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats
 
-from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, compute_pass_score
+from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
     from threader.validation.collector import ValidatedPass
@@ -20,12 +20,22 @@ def rescore_with_weights(
     records: list[ValidatedPass],
     weights: ScoringWeights,
 ) -> np.ndarray:
-    """Re-score all passes with given weights. Returns array of scores."""
+    """Re-score all passes with given weights. Returns array of scores.
+
+    When ``weights.relative_zone_weight > 0``, the stored ``actual_target_zone``
+    (raw xT, collected with alpha=0) is adjusted using team context stored in
+    ``r.team_mean_xT``. Records collected before v3 lack ``team_mean_xT`` and
+    will skip the adjustment (falling back to raw xT behaviour).
+    """
+    alpha = weights.relative_zone_weight
     scores = np.empty(len(records), dtype=np.float64)
     for i, r in enumerate(records):
+        raw_zone = r.actual_target_zone
+        team_mean = getattr(r, "team_mean_xT", None)
+        adj_zone = _adjusted_zone(raw_zone, team_mean, alpha)
         scores[i] = compute_pass_score(
             comp=r.actual_target_completion,
-            zone=r.actual_target_zone,
+            zone=adj_zone,
             pressure=r.actual_target_pressure,
             space=r.actual_target_space,
             penetration=r.actual_target_penetration,

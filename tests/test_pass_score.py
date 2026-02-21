@@ -8,7 +8,7 @@ Description:
 """
 
 from threader.models import Player
-from threader.scoring.pass_score import score_pass_option
+from threader.scoring.pass_score import ScoringWeights, _adjusted_zone, score_pass_option
 from threader.scoring.penetration import penetration_score
 from threader.scoring.space import space_available
 
@@ -206,3 +206,106 @@ class TestAttackDirection:
         assert ranked[-1] == gk_opt, (
             f"GK should be last, but ranked {ranked.index(gk_opt)+1}/{len(ranked)}"
         )
+
+
+class TestRelativeZoneValue:
+    """Tests for team-context zone value adjustment."""
+
+    def test_alpha_zero_matches_no_context(self):
+        """relative_zone_weight=0 must be identical to passing no team_mean_xT."""
+        passer = _player(0, 0)
+        target = _player(20, 0, pid=2)
+        defenders = [_player(30, 10, pid=3, tid=2)]
+
+        baseline = score_pass_option(passer, target, defenders)
+        with_zero_alpha = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=0.0),
+            team_mean_xT=0.05,
+        )
+
+        assert baseline.pass_score == with_zero_alpha.pass_score
+        assert baseline.zone_value == with_zero_alpha.zone_value
+
+    def test_none_team_mean_falls_back_to_raw(self):
+        """team_mean_xT=None leaves zone_value unchanged regardless of alpha."""
+        passer = _player(0, 0)
+        target = _player(20, 0, pid=2)
+        defenders = [_player(30, 10, pid=3, tid=2)]
+
+        baseline = score_pass_option(passer, target, defenders)
+        with_none_mean = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=1.0),
+            team_mean_xT=None,
+        )
+
+        assert baseline.pass_score == with_none_mean.pass_score
+
+    def test_above_average_receiver_gets_amplified(self):
+        """Receiver with xT above team mean gets a boosted zone value."""
+        passer = _player(0, 0)
+        # Short forward pass — small penetration keeps the base score well below 100
+        target = _player(5, 0, pid=2)
+        defenders = [_player(30, 10, pid=3, tid=2)]  # Far away — clear lane
+
+        low_alpha = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=0.0),
+            team_mean_xT=0.02,
+        )
+        high_alpha = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=1.0),
+            team_mean_xT=0.02,  # team far behind receiver
+        )
+
+        assert high_alpha.zone_value > low_alpha.zone_value
+        assert high_alpha.pass_score > low_alpha.pass_score
+
+    def test_below_average_receiver_gets_reduced(self):
+        """Receiver with xT below team mean gets a reduced zone value."""
+        passer = _player(0, 0)
+        # Lateral/slight backward pass — not so deep that score is already floored at 0
+        target = _player(-5, 15, pid=2)
+        defenders = [_player(30, 5, pid=3, tid=2)]  # Far defender — no pressure
+
+        low_alpha = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=0.0),
+            team_mean_xT=0.15,  # Team far ahead of this receiver
+        )
+        high_alpha = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=1.0),
+            team_mean_xT=0.15,
+        )
+
+        assert high_alpha.zone_value < low_alpha.zone_value
+        assert high_alpha.pass_score < low_alpha.pass_score
+
+    def test_zone_value_non_negative_after_adjustment(self):
+        """Adjusted zone value must never go below 0."""
+        passer = _player(0, 0)
+        target = _player(-45, 0, pid=2)  # Deep in own half — very low xT
+        defenders = [_player(10, 5, pid=3, tid=2)]
+
+        result = score_pass_option(
+            passer, target, defenders,
+            weights=ScoringWeights(relative_zone_weight=5.0),
+            team_mean_xT=0.30,  # Team very high — extreme drag on this receiver
+        )
+
+        assert result.zone_value >= 0.0
+
+    def test_adjusted_zone_helper_formula(self):
+        """_adjusted_zone implements the expected formula correctly."""
+        # adj = abs + alpha * (abs - mean) = 0.18 + 1.0 * (0.18 - 0.032) = 0.328
+        result = _adjusted_zone(0.18, 0.032, 1.0)
+        assert abs(result - 0.328) < 1e-9
+
+    def test_adjusted_zone_alpha_zero_identity(self):
+        assert _adjusted_zone(0.15, 0.05, 0.0) == 0.15
+
+    def test_adjusted_zone_none_mean_identity(self):
+        assert _adjusted_zone(0.15, None, 1.0) == 0.15

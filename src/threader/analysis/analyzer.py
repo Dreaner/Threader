@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from threader.models import AnalysisResult, PassEvent, Player, Snapshot
 from threader.scoring.pass_score import score_pass_option
+from threader.scoring.zone_value import zone_value
 
 
 def analyze_snapshot(
@@ -35,6 +36,13 @@ def analyze_snapshot(
     defenders = snapshot.opponents(passer)
     attack_dir = snapshot.attack_direction(passer)
 
+    team_mean_xT = _compute_team_mean_xT(
+        teammates,
+        pitch_length=snapshot.pitch_length,
+        pitch_width=snapshot.pitch_width,
+        attack_direction=attack_dir,
+    )
+
     options = [
         score_pass_option(
             passer=passer,
@@ -43,6 +51,7 @@ def analyze_snapshot(
             pitch_length=snapshot.pitch_length,
             pitch_width=snapshot.pitch_width,
             attack_direction=attack_dir,
+            team_mean_xT=team_mean_xT,
         )
         for teammate in teammates
     ]
@@ -51,7 +60,29 @@ def analyze_snapshot(
         passer=passer,
         snapshot=snapshot,
         options=options,
+        team_mean_xT=team_mean_xT,
     )
+
+
+def _compute_team_mean_xT(
+    teammates: list[Player],
+    pitch_length: float,
+    pitch_width: float,
+    attack_direction: float,
+) -> float | None:
+    """Compute the mean xT of outfield teammates (GK excluded).
+
+    Returns None if there are no eligible players, which causes
+    ``score_pass_option`` to skip the team-context adjustment.
+    """
+    eligible = [p for p in teammates if (p.position or "").upper() != "GK"]
+    if not eligible:
+        return None
+    total = sum(
+        zone_value(p.x, p.y, pitch_length, pitch_width, attack_direction=attack_direction)
+        for p in eligible
+    )
+    return total / len(eligible)
 
 
 def analyze_pass_event(pass_event: PassEvent) -> AnalysisResult:

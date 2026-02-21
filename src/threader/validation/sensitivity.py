@@ -90,7 +90,16 @@ def weight_sweep(
     {value, auc, concordance, flip_rate} dicts.
     """
     base_weights = DEFAULT_WEIGHTS
-    weight_names = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling"]
+    weight_names = [
+        "zone_amplifier",
+        "penetration_weight",
+        "space_weight",
+        "pressure_scaling",
+        # NOTE: relative_zone_weight sweep via stored PassOption.zone_value is
+        # approximate — the stored value is already team-context-adjusted at
+        # collection time.  For accurate sensitivity, re-run analyze_snapshot.
+        "relative_zone_weight",
+    ]
 
     # Get baseline rank-1 IDs for flip rate computation
     def make_rank_func(w: ScoringWeights):
@@ -146,7 +155,7 @@ def dimension_ablation(records: list[ValidatedPass]) -> dict[str, dict]:
     Returns dict keyed by ablated dimension name.
     """
     base = DEFAULT_WEIGHTS
-    weight_names = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling"]
+    weight_names = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling", "relative_zone_weight"]
 
     def make_rank_func(w: ScoringWeights):
         return lambda vp: rank_with_weights(vp, w)
@@ -204,7 +213,7 @@ def pressure_deep_dive(records: list[ValidatedPass]) -> dict:
 
     Returns sweep results.
     """
-    weight_names = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling"]
+    weight_names = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling", "relative_zone_weight"]
     base = DEFAULT_WEIGHTS
 
     def make_rank_func(w: ScoringWeights):

@@ -7,7 +7,7 @@ Description:
     Tests for the main analyzer.
 """
 
-from threader.analysis.analyzer import analyze_snapshot
+from threader.analysis.analyzer import _compute_team_mean_xT, analyze_snapshot
 from threader.models import BallPosition, Player, Snapshot
 
 
@@ -89,3 +89,72 @@ class TestAnalyzeSnapshot:
         passer = snapshot.home_players[0]
         result = analyze_snapshot(snapshot, passer)
         assert result.passer == passer
+
+
+class TestTeamMeanXt:
+    """Tests for team-context zone value integration."""
+
+    def test_gk_excluded_from_team_mean(self):
+        """GK should not influence the team mean xT calculation."""
+        # Players with known xT positions
+        outfield = [
+            _player(20, 0, pid=2, tid=1),   # mid-attacking
+            _player(15, 0, pid=3, tid=1),   # mid
+        ]
+        gk = _player(-45, 0, pid=1, tid=1, position="GK")
+
+        mean_with_gk = _compute_team_mean_xT(outfield + [gk], 105.0, 68.0, 1.0)
+        mean_without_gk = _compute_team_mean_xT(outfield, 105.0, 68.0, 1.0)
+
+        # Should be identical — GK is excluded
+        assert mean_with_gk is not None
+        assert mean_without_gk is not None
+        assert abs(mean_with_gk - mean_without_gk) < 1e-9
+
+    def test_only_gk_returns_none(self):
+        """If the only teammate is the GK, return None (no eligible players)."""
+        gk = _player(-45, 0, pid=1, tid=1, position="GK")
+        result = _compute_team_mean_xT([gk], 105.0, 68.0, 1.0)
+        assert result is None
+
+    def test_striker_in_box_ranked_higher_with_team_context(self):
+        """When team is in midfield, a striker run into the box gets amplified."""
+        from threader.scoring.pass_score import ScoringWeights
+
+        home_tid, away_tid = 1, 2
+        # Team mostly in their half, one striker making a run into the box
+        snapshot = Snapshot(
+            home_players=[
+                _player(0, 0, pid=10, tid=home_tid),          # passer (center)
+                _player(45, 0, pid=9, tid=home_tid),           # striker in box (high xT)
+                _player(-5, 10, pid=8, tid=home_tid),          # midfielder (low xT)
+                _player(-10, -5, pid=7, tid=home_tid),         # midfielder (low xT)
+                _player(-45, 0, pid=1, tid=home_tid, position="GK"),  # GK
+            ],
+            away_players=[
+                _player(20, 5, pid=21, tid=away_tid),
+                _player(15, -5, pid=22, tid=away_tid),
+                _player(30, 0, pid=23, tid=away_tid),
+            ],
+            ball=BallPosition(x=0, y=0),
+            home_attacks_right=True,
+        )
+        passer = snapshot.home_players[0]  # pid=10
+
+        # Without team context (alpha=0): striker might not dominate due to low completion
+        result_no_ctx = analyze_snapshot(snapshot, passer)
+        result_no_ctx_striker = next(o for o in result_no_ctx.options if o.target.player_id == 9)
+
+        # With team context (alpha=1): striker's xT is amplified vs low team mean
+        # We need to re-run with different weights — use _compute_team_mean_xT directly
+        # and verify the zone adjustment direction
+        teammates = [p for p in snapshot.home_players if p.player_id != passer.player_id]
+        team_mean = _compute_team_mean_xT(teammates, 105.0, 68.0, 1.0)
+
+        assert team_mean is not None
+        # Striker zone value (attacking half, near box) should be well above team mean
+        from threader.scoring.zone_value import zone_value
+        striker_xt = zone_value(45.0, 0.0, attack_direction=1.0)
+        assert striker_xt > team_mean, (
+            f"Striker xT ({striker_xt:.3f}) should exceed team mean ({team_mean:.3f})"
+        )

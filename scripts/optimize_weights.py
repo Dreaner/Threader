@@ -49,13 +49,20 @@ from threader.validation.collector import (
 )
 
 # ── Parameter names & bounds ─────────────────────────────────────────────
-PARAM_NAMES = ["zone_amplifier", "penetration_weight", "space_weight", "pressure_scaling"]
+PARAM_NAMES = [
+    "zone_amplifier",
+    "penetration_weight",
+    "space_weight",
+    "pressure_scaling",
+    "relative_zone_weight",   # α: team-context zone adjustment
+]
 
 PARAM_BOUNDS = [
-    (0.5, 5.0),    # zone_amplifier
-    (0.01, 1.0),   # penetration_weight
+    (0.5, 5.0),      # zone_amplifier
+    (0.01, 1.0),     # penetration_weight
     (0.0001, 0.05),  # space_weight
-    (0.01, 0.50),  # pressure_scaling
+    (0.01, 0.50),    # pressure_scaling
+    (0.0, 3.0),      # relative_zone_weight (0 = disabled, ~1.0 = moderate)
 ]
 
 
@@ -76,18 +83,22 @@ def _kv(key: str, value: object, indent: int = 4) -> str:
 
 
 def _params_to_weights(params: np.ndarray) -> ScoringWeights:
-    """Convert a 4-element parameter vector to ScoringWeights."""
+    """Convert a 5-element parameter vector to ScoringWeights."""
     return ScoringWeights(
         zone_amplifier=float(params[0]),
         penetration_weight=float(params[1]),
         space_weight=float(params[2]),
         pressure_scaling=float(params[3]),
+        relative_zone_weight=float(params[4]),
     )
 
 
 def _weights_to_params(w: ScoringWeights) -> np.ndarray:
-    """Convert ScoringWeights to a 4-element parameter vector."""
-    return np.array([w.zone_amplifier, w.penetration_weight, w.space_weight, w.pressure_scaling])
+    """Convert ScoringWeights to a 5-element parameter vector."""
+    return np.array([
+        w.zone_amplifier, w.penetration_weight, w.space_weight,
+        w.pressure_scaling, w.relative_zone_weight,
+    ])
 
 
 # ── Objective functions ──────────────────────────────────────────────────
@@ -223,6 +234,11 @@ def main() -> None:
             print(f"\n  Loaded {len(records)} cached records from {cache_path}", file=sys.stderr)
             if not hasattr(records[0], "delta_xt"):
                 print("  ⚠ Cached records lack delta_xt field. Re-collecting...", file=sys.stderr)
+                records = None
+            elif "team_mean_xT" not in records[0].__dict__:
+                # hasattr() returns True for dataclass defaults even on old pickles,
+                # so check __dict__ directly to ensure it was actually stored.
+                print("  ⚠ Cached records lack team_mean_xT (v3). Re-collecting...", file=sys.stderr)
                 records = None
 
     if records is None:
@@ -393,6 +409,7 @@ def main() -> None:
         penetration_weight={optimized_weights.penetration_weight:.6f},
         space_weight={optimized_weights.space_weight:.6f},
         pressure_scaling={optimized_weights.pressure_scaling:.6f},
+        relative_zone_weight={optimized_weights.relative_zone_weight:.6f},
     )
 """)
 

@@ -11,7 +11,7 @@ import random
 from typing import TYPE_CHECKING
 
 from threader.geometry.distance import euclidean
-from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, compute_pass_score
+from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
     from threader.models import PassOption
@@ -80,12 +80,22 @@ def rank_with_weights(
 
     Uses the raw dimension values stored in each PassOption to recompute
     the Pass Score with different weights (avoids re-running geometry).
+
+    When ``weights.relative_zone_weight > 0``, the stored ``zone_value``
+    (raw xT, collected with alpha=0) is adjusted using the team context:
+    ``adj_zone = raw_xT + alpha * (raw_xT - team_mean_xT)``.
+    This requires the ValidatedPass to have ``team_mean_xT`` populated
+    (available in caches collected after v3).
     """
+    alpha = weights.relative_zone_weight
+    team_mean = getattr(vp, "team_mean_xT", None)
+
     scored: list[tuple[int, float]] = []
     for opt in vp.ranked_options:
+        adj_zone = _adjusted_zone(opt.zone_value, team_mean, alpha)
         score = compute_pass_score(
             comp=opt.completion_probability,
-            zone=opt.zone_value,
+            zone=adj_zone,
             pressure=opt.receiving_pressure,
             space=opt.space_available,
             penetration=opt.penetration_score,

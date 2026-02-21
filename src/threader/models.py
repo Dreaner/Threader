@@ -169,6 +169,7 @@ class AnalysisResult:
     passer: Player
     snapshot: Snapshot
     options: list[PassOption] = field(default_factory=list)
+    team_mean_xT: float | None = None  # Mean xT of outfield teammates (GK excluded)
 
     @property
     def ranked_options(self) -> list[PassOption]:
