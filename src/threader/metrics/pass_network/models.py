@@ -6,6 +6,9 @@ Description:
     Data models for pass network analysis.
     A PassNetwork is a directed weighted graph: nodes are players,
     edges are pass relationships aggregated over a match or period.
+
+    NetworkMetrics and PlayerMetrics hold computed graph-theoretic indicators
+    derived from a PassNetwork by compute_metrics() in metrics.py.
 """
 
 from __future__ import annotations
@@ -95,5 +98,96 @@ class PassNetwork:
         return sorted(
             self.nodes.values(),
             key=lambda n: n.pass_count + n.receive_count,
+            reverse=True,
+        )[:top_n]
+
+
+# ---------------------------------------------------------------------------
+# Network metrics output types
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class PlayerMetrics:
+    """Graph-theoretic indicators for a single player in the pass network.
+
+    All values are normalized to [0, 1] for easy cross-player comparison.
+    """
+
+    player_id: int
+
+    degree_centrality: float
+    """Fraction of possible pass partnerships this player has.
+
+    degree = (unique_out_edges + unique_in_edges) / (2 × (n − 1))
+
+    High → passes to / receives from many different teammates.
+    Low  → very few unique passing relationships (e.g. isolated GK).
+    """
+
+    betweenness_centrality: float
+    """Fraction of shortest passing paths that route through this player.
+
+    Shortest paths are computed on the weighted graph where edge distance =
+    1 / edge.count (more passes = shorter / stronger connection).
+
+    Normalized by (n−1)(n−2) so the maximum possible value is 1.0.
+
+    High → essential relay player; removing them would fragment flow.
+    Low  → peripheral; bypassed by most main passing routes.
+    """
+
+    pagerank: float
+    """Relative importance based on who passes to this player (0–1, normalized).
+
+    Computed with damping factor 0.85, edge weight = edge.count.
+    Normalized so the highest-ranked player = 1.0.
+
+    High → receives passes from players who themselves are well-connected.
+    Low  → receives from few or low-importance teammates.
+    """
+
+
+@dataclass(frozen=True)
+class NetworkMetrics:
+    """Graph-theoretic summary of a team's pass network.
+
+    Produced by compute_metrics(network) in metrics.py.
+    """
+
+    game_id: int
+    team_id: int
+    period: int | None
+
+    density: float
+    """Ratio of actual edges to the maximum possible edges: |E| / (n × (n−1)).
+
+    Range [0, 1].  Higher = passing distributed across more routes.
+    Lower = passing concentrated through a few dominant paths.
+    """
+
+    players: dict[int, PlayerMetrics]  # player_id → PlayerMetrics
+
+    def top_hubs(self, top_n: int = 3) -> list[PlayerMetrics]:
+        """Players with the highest degree centrality (most unique partnerships)."""
+        return sorted(
+            self.players.values(),
+            key=lambda p: p.degree_centrality,
+            reverse=True,
+        )[:top_n]
+
+    def top_connectors(self, top_n: int = 3) -> list[PlayerMetrics]:
+        """Players with the highest betweenness centrality (key relay nodes)."""
+        return sorted(
+            self.players.values(),
+            key=lambda p: p.betweenness_centrality,
+            reverse=True,
+        )[:top_n]
+
+    def top_receivers(self, top_n: int = 3) -> list[PlayerMetrics]:
+        """Players with the highest PageRank (focal points of team's passing)."""
+        return sorted(
+            self.players.values(),
+            key=lambda p: p.pagerank,
             reverse=True,
         )[:top_n]

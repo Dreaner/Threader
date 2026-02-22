@@ -92,19 +92,28 @@ class PassEdge:
 
 ---
 
-## Level 3 — 网络指标（待实现）
+## Level 3 — 网络指标（✅ 已实现，`metrics.py`）
 
-基于图论的结构指标：
+基于图论的结构指标，纯 Python 实现（不引入 networkx）：
 
-| 指标 | 含义 | 用途 |
-|------|------|------|
-| Degree centrality | 传球涉及次数占比 | 谁是核心枢纽？ |
-| Betweenness centrality | 连接两个球员之间必经的节点 | 谁是传球"中间人"？ |
-| PageRank | 被高质量球员传球的重要性 | 更细致的重要性排名 |
-| Network density | 边数 / 最大可能边数 | 传球分布有多均匀？ |
-| Clustering coefficient | 局部传球小圈子程度 | 是否有固定的传球三角？ |
+| 指标 | 含义 | 用途 | 实现 |
+|------|------|------|------|
+| **Density** | 边数 / 最大可能边数 | 传球分布有多均匀？ | `\|E\| / (n×(n−1))` |
+| **Degree centrality** | 有多少独特传球伙伴 | 谁是核心枢纽？ | `(out+in) / 2(n−1)` |
+| **Betweenness centrality** | 经过该球员的最短路径比例 | 谁是传球"中间人"？ | Brandes 算法，距离=1/count |
+| **PageRank** | 被重要球员传球的重要性 | 谁是接球焦点？ | 幂迭代，damping=0.85 |
 
-依赖：`networkx` 或手动实现（先手动，避免引入新依赖）
+> Clustering coefficient 暂缓：足球场景里意义不如前三个直观，后续视需求添加。
+
+### 关键算法决策
+
+**Betweenness 的边权重**：用 `1/edge.count` 作为路径距离。
+- 传球次数多的路线 = 距离短 = 更"主干"的连接
+- 这样找到的是"主要传球干道上的中间人"，而不只是"跳数少的中转站"
+
+**PageRank 的边权重**：直接用 `edge.count`（传球越多 = 影响力越强）。
+
+**归一化**：所有球员级指标输出 `[0, 1]`；PageRank 额外除以最大值（最重要的球员 = 1.0）。
 
 ---
 
@@ -131,5 +140,5 @@ class PassEdge:
 
 ---
 
-*模块状态: Level 1 实现中*
+*模块状态: Level 1 + Level 3 已实现；Level 2（Pass Score 集成）待定*
 *最后更新: 2026-02-22*
