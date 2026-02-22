@@ -1,0 +1,513 @@
+/* ============================================
+   Threader — Custom Dash Styles
+   Dark theme with football-inspired palette
+   ============================================ */
+
+/* ---- Root Variables ---- */
+:root {
+    --bg-dark: #0f0f1a;
+    --bg-panel: #151528;
+    --bg-card: #1c1c35;
+    --bg-card-hover: #24244a;
+    --pitch-green: #1a472a;
+    --accent-gold: #FFD700;
+    --accent-silver: #C0C0C0;
+    --accent-bronze: #CD7F32;
+    --text-primary: #e8e8f0;
+    --text-secondary: #9999b3;
+    --text-dim: #666680;
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --home-blue: #3498db;
+    --away-red: #e74c3c;
+    --passer-green: #2ecc71;
+    --score-high: #2ecc71;
+    --score-mid: #f1c40f;
+    --score-low: #e74c3c;
+}
+
+/* ---- Global ---- */
+body {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-primary) !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+}
+
+/* ---- App Container ---- */
+.app-container {
+    min-height: 100vh;
+    padding: 0;
+}
+
+/* ---- Header ---- */
+.app-header {
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a1a35 100%);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.app-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin: 0;
+    letter-spacing: 1px;
+}
+
+.app-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin: 0;
+    font-weight: 400;
+}
+
+/* ---- Selectors Row ---- */
+.selector-row {
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: 12px 24px;
+}
+
+.selector-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+/* ---- Dropdowns (New Dash v2+) ---- */
+/* Dropdown container and input field */
+.Select__control,
+.Select__control--is-focused,
+.Select__control--menu-is-open {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-subtle) !important;
+    box-shadow: none !important;
+}
+
+.Select__control:hover {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Single selected value text */
+.Select__single-value {
+    color: var(--text-primary) !important;
+}
+
+/* Placeholder text */
+.Select__placeholder {
+    color: var(--text-secondary) !important;
+}
+
+/* Dropdown arrow/indicator */
+.Select__indicator,
+.Select__dropdown-indicator {
+    color: var(--text-secondary) !important;
+}
+
+.Select__indicator:hover {
+    color: var(--text-primary) !important;
+}
+
+/* Dropdown menu (options list) */
+.Select__menu {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-subtle) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.Select__menu-list {
+    background-color: var(--bg-card) !important;
+    padding: 4px 0 !important;
+}
+
+/* Individual option */
+.Select__option {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+    cursor: pointer !important;
+    padding: 10px 12px !important;
+    font-size: 0.9rem !important;
+}
+
+/* Option hover state */
+.Select__option--is-focused {
+    background-color: var(--bg-card-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Selected option in the list */
+.Select__option--is-selected {
+    background-color: rgba(255, 215, 0, 0.15) !important;
+    color: var(--accent-gold) !important;
+    font-weight: 600 !important;
+}
+
+/* Legacy Dash v1 support (just in case) */
+.Select-control,
+.Select-menu-outer {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-subtle) !important;
+    color: var(--text-primary) !important;
+}
+
+.Select-value-label,
+.Select-placeholder {
+    color: var(--text-primary) !important;
+}
+
+.Select-option {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.Select-option.is-focused {
+    background-color: var(--bg-card-hover) !important;
+}
+
+/* ---- Main Content ---- */
+.main-content {
+    display: flex;
+    min-height: calc(100vh - 120px);
+}
+
+/* ---- Pitch Column ---- */
+.pitch-column {
+    flex: 1;
+    padding: 8px;
+    min-width: 0;
+}
+
+.pitch-graph .js-plotly-plot {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* ---- Analysis Panel ---- */
+.analysis-panel {
+    width: 380px;
+    min-width: 340px;
+    max-width: 420px;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-subtle);
+    padding: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 120px);
+}
+
+.panel-section-title {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ---- Match Info Card ---- */
+.match-info-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-subtle);
+}
+
+.match-info-card .teams {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.match-info-card .vs {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-weight: 400;
+}
+
+.match-info-card .detail {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 6px;
+}
+
+/* ---- Pass Event Info ---- */
+.pass-event-info {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.pass-event-info .passer-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--passer-green);
+}
+
+.pass-event-info .meta-tag {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+/* ---- Pass Option Cards ---- */
+.option-card {
+    background: var(--bg-card);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-subtle);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.option-card:hover {
+    background: var(--bg-card-hover);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.option-card.selected {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.15);
+}
+
+.option-card.actual-target {
+    border-left: 3px solid var(--accent-gold);
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.rank-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: #000;
+    flex-shrink: 0;
+}
+
+.rank-badge.rank-1 { background: var(--accent-gold); }
+.rank-badge.rank-2 { background: var(--accent-silver); }
+.rank-badge.rank-3 { background: var(--accent-bronze); }
+.rank-badge.rank-other { background: var(--text-dim); color: #fff; }
+
+.option-player {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-left: 10px;
+    flex: 1;
+}
+
+.option-score {
+    font-size: 1.3rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.actual-tag {
+    font-size: 0.6rem;
+    color: var(--accent-gold);
+    background: rgba(255, 215, 0, 0.1);
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+/* ---- Dimension Bars ---- */
+.dimension-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 0.72rem;
+}
+
+.dimension-label {
+    width: 80px;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.dimension-bar-bg {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 0 8px;
+}
+
+.dimension-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.dimension-value {
+    width: 45px;
+    text-align: right;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+}
+
+/* ---- Scrollbar ---- */
+.analysis-panel::-webkit-scrollbar {
+    width: 5px;
+}
+
+.analysis-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.analysis-panel::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.analysis-panel::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ---- Loading State ---- */
+.loading-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+}
+
+/* ---- Utilities ---- */
+.text-gold { color: var(--accent-gold); }
+.text-silver { color: var(--accent-silver); }
+.text-bronze { color: var(--accent-bronze); }
+.text-dim { color: var(--text-dim); }
+.text-secondary { color: var(--text-secondary); }
+.text-home { color: var(--home-blue); }
+.text-away { color: var(--away-red); }
+.text-passer { color: var(--passer-green); }
+.fw-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+    .main-content {
+        flex-direction: column;
+    }
+    .analysis-panel {
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        border-left: none;
+        border-top: 1px solid var(--border-subtle);
+    }
+}
+
+/* ---- Play Animation Button ---- */
+.play-animation-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.15) 0%, rgba(46, 204, 113, 0.08) 100%);
+    border: 1px solid rgba(46, 204, 113, 0.35);
+    border-radius: 8px;
+    color: var(--passer-green);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.play-animation-btn:hover {
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.25) 0%, rgba(46, 204, 113, 0.15) 100%);
+    border-color: rgba(46, 204, 113, 0.6);
+    box-shadow: 0 0 16px rgba(46, 204, 113, 0.15);
+    transform: translateY(-1px);
+}
+
+.play-animation-btn:active {
+    transform: translateY(0);
+    background: linear-gradient(135deg, rgba(46, 204, 113, 0.3) 0%, rgba(46, 204, 113, 0.2) 100%);
+}
+
+.play-animation-btn .play-icon {
+    font-size: 1rem;
+}
+
+.play-animation-btn .play-label {
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* Loading state */
+.play-animation-btn.loading {
+    pointer-events: none;
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.play-animation-btn.loading .play-icon {
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+.play-animation-btn.loading .play-icon::before {
+    content: '⏳';
+}
+
+.play-animation-btn.loading .play-label::after {
+    content: '';
+    animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}

@@ -16,7 +16,7 @@ from threader.geometry.distance import (
     projection_parameter,
 )
 from threader.geometry.passing_lane import is_in_passing_lane, passing_lane_blocking
-from threader.models import Player
+from threader.core.models import Player
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1) -> Player:

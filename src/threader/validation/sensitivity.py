@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats
 
-from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, compute_pass_score
+from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
+from threader.metrics.pass_value.scoring.pass_score import compute_pass_score
 from threader.validation.baselines import rank_with_weights
 
 if TYPE_CHECKING:

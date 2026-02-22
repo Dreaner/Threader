@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from threader.scoring.pass_score import ScoringWeights
+from threader.metrics.pass_value.models import ScoringWeights
 
 from .models import ModelResult
 

@@ -1,17 +1,16 @@
 """
 Project: Threader
-File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: space.py
-Description: 
+Description:
     Space available — how much room does the receiver have?
     Simply the distance (in meters) to the nearest opponent.
 """
 
 from __future__ import annotations
 
+from threader.core.models import Player
 from threader.geometry.distance import player_distance
-from threader.models import Player
 
 
 def space_available(

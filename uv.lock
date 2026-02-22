@@ -1559,20 +1559,22 @@ wheels = [
 
 [[package]]
 name = "threader"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
-    { name = "dash" },
-    { name = "dash-bootstrap-components" },
     { name = "kloppy" },
-    { name = "matplotlib" },
     { name = "numpy" },
     { name = "pandas" },
-    { name = "plotly" },
-    { name = "pyarrow" },
 ]
 
 [package.optional-dependencies]
+app = [
+    { name = "dash" },
+    { name = "dash-bootstrap-components" },
+    { name = "matplotlib" },
+    { name = "plotly" },
+    { name = "pyarrow" },
+]
 deploy = [
     { name = "gunicorn" },
 ]
@@ -1593,15 +1595,15 @@ validation = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dash", specifier = ">=2.17" },
-    { name = "dash-bootstrap-components", specifier = ">=1.6" },
+    { name = "dash", marker = "extra == 'app'", specifier = ">=2.17" },
+    { name = "dash-bootstrap-components", marker = "extra == 'app'", specifier = ">=1.6" },
     { name = "gunicorn", marker = "extra == 'deploy'", specifier = ">=22.0" },
     { name = "kloppy", specifier = ">=3.18" },
-    { name = "matplotlib", specifier = ">=3.8" },
+    { name = "matplotlib", marker = "extra == 'app'", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", specifier = ">=2.1" },
-    { name = "plotly", specifier = ">=5.22" },
-    { name = "pyarrow", specifier = ">=15.0" },
+    { name = "plotly", marker = "extra == 'app'", specifier = ">=5.22" },
+    { name = "pyarrow", marker = "extra == 'app'", specifier = ">=15.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
     { name = "scikit-learn", marker = "extra == 'learning'", specifier = ">=1.4" },
@@ -1611,7 +1613,7 @@ requires-dist = [
     { name = "tabulate", marker = "extra == 'validation'", specifier = ">=0.9" },
     { name = "xgboost", marker = "extra == 'learning'", specifier = ">=2.0" },
 ]
-provides-extras = ["dev", "deploy", "validation", "learning"]
+provides-extras = ["app", "dev", "deploy", "validation", "learning"]
 
 [[package]]
 name = "threadpoolctl"

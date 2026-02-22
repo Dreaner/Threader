@@ -11,10 +11,11 @@ import random
 from typing import TYPE_CHECKING
 
 from threader.geometry.distance import euclidean
-from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights, _adjusted_zone, compute_pass_score
+from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
+from threader.metrics.pass_value.scoring.pass_score import _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
-    from threader.models import PassOption
+    from threader.metrics.pass_value.models import PassOption
     from threader.validation.collector import ValidatedPass
 
 

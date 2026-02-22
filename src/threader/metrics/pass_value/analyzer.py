@@ -1,19 +1,19 @@
 """
 Project: Threader
-File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: analyzer.py
-Description: 
-    Main analysis entry point.
+Description:
+    Main analysis entry point for the Pass Value metric.
     Takes a snapshot and a passer, evaluates all possible pass targets,
     and returns ranked pass options.
 """
 
 from __future__ import annotations
 
-from threader.models import AnalysisResult, PassEvent, Player, Snapshot
-from threader.scoring.pass_score import score_pass_option
-from threader.scoring.zone_value import zone_value
+from threader.core.models import Player, Snapshot
+from threader.metrics.pass_value.models import AnalysisResult
+from threader.metrics.pass_value.scoring.pass_score import score_pass_option
+from threader.metrics.pass_value.scoring.zone_value import zone_value
 
 
 def analyze_snapshot(
@@ -79,19 +79,23 @@ def _compute_team_mean_xT(
     if not eligible:
         return None
     total = sum(
-        zone_value(p.x, p.y, pitch_length, pitch_width, attack_direction=attack_direction)
+        zone_value(
+            p.x, p.y, pitch_length, pitch_width,
+            attack_direction=attack_direction,
+        )
         for p in eligible
     )
     return total / len(eligible)
 
 
-def analyze_pass_event(pass_event: PassEvent) -> AnalysisResult:
-    """Analyze a PFF pass event — find what the optimal pass should have been.
+def analyze_pass_event(pass_event) -> AnalysisResult:
+    """Analyze a pass event — find what the optimal pass should have been.
 
     Locates the passer in the snapshot, then evaluates all teammates.
 
     Args:
-        pass_event: A PassEvent extracted from PFF event data.
+        pass_event: A pass event with ``snapshot``, ``passer_id``, and
+            ``passer_name`` attributes.
 
     Returns:
         AnalysisResult with ranked pass options.

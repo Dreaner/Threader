@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.models import AnalysisResult, PassOption, Player, Snapshot
+from threader.core.models import Player, Snapshot
+from threader.metrics.pass_value.models import AnalysisResult, PassOption
 from threader.viz.plotly_pitch import draw_pitch
 
 

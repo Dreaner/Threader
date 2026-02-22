@@ -1,9 +1,8 @@
 """
 Project: Threader
-File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: completion.py
-Description: 
+Description:
     Completion probability — can this pass reach its target?
     Factors:
       1. Distance decay (longer passes are harder)
@@ -12,9 +11,9 @@ Description:
 
 from __future__ import annotations
 
+from threader.core.models import Player
 from threader.geometry.distance import player_distance
 from threader.geometry.passing_lane import passing_lane_blocking
-from threader.models import Player
 
 
 def _base_probability(distance: float) -> float:

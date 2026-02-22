@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats as sp_stats
 
-from threader.scoring.pass_score import compute_pass_score, DEFAULT_WEIGHTS
+from threader.metrics.pass_value.models import DEFAULT_WEIGHTS
+from threader.metrics.pass_value.scoring.pass_score import compute_pass_score
 
 if TYPE_CHECKING:
     from threader.validation.collector import ValidatedPass
