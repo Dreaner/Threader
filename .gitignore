@@ -208,4 +208,5 @@ __marimo__/
 
 # Match data (large binary/JSON files)
 data/FIFA_World_Cup_2022/
+data/EPL_2024_25/
 .validation_cache/
