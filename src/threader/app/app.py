@@ -28,7 +28,7 @@ from threader.data.pff.tracking_frames import get_animation_frames_cached
 from threader.metrics.pass_value.analyzer import analyze_pass_event
 from threader.metrics.pass_value.models import AnalysisResult
 from threader.viz.plotly_animation_3d import build_animation_figure_3d
-from threader.viz.plotly_passes import (
+from threader.metrics.pass_value.viz.plotly_passes import (
     build_analysis_figure as build_static_figure,
 )
 
