@@ -1,22 +1,24 @@
 [project]
 name = "threader"
-version = "0.1.0"
-description = "AlphaGo-inspired football pass analysis — find the optimal pass target."
+version = "0.2.0"
+description = "A Python library for football pass analysis research."
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=1.26",
     "pandas>=2.1",
-    "pyarrow>=15.0",
-    "matplotlib>=3.8",
     "kloppy>=3.18",
-    "dash>=2.17",
-    "dash-bootstrap-components>=1.6",
-    "plotly>=5.22",
 ]
 
 [project.optional-dependencies]
+app = [
+    "dash>=2.17",
+    "dash-bootstrap-components>=1.6",
+    "plotly>=5.22",
+    "matplotlib>=3.8",
+    "pyarrow>=15.0",
+]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",

@@ -15,21 +15,22 @@ Description:
 
 from __future__ import annotations
 
-import json
 from functools import lru_cache
 from pathlib import Path
 
 import dash
-from dash import Input, Output, State, ctx, dcc, html, no_update
 import dash_bootstrap_components as dbc
+from dash import Input, Output, State, ctx, dcc, html, no_update
 
-from threader.analysis.analyzer import analyze_pass_event
-from threader.data.events import extract_pass_events
-from threader.data.metadata import load_match_info
-from threader.data.tracking_frames import get_animation_frames_cached
-from threader.models import AnalysisResult, PassEvent
+from threader.data.pff.events import PassEvent, extract_pass_events
+from threader.data.pff.metadata import load_match_info
+from threader.data.pff.tracking_frames import get_animation_frames_cached
+from threader.metrics.pass_value.analyzer import analyze_pass_event
+from threader.metrics.pass_value.models import AnalysisResult
 from threader.viz.plotly_animation_3d import build_animation_figure_3d
-from threader.viz.plotly_passes import build_analysis_figure as build_static_figure
+from threader.viz.plotly_passes import (
+    build_analysis_figure as build_static_figure,
+)
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -211,7 +212,7 @@ def _build_main() -> html.Div:
                         n_clicks=0,
                         style={"display": "none"},
                         children=[
-                            html.Span("▶", className="play-icon"),
+                            html.Span("\u25b6", className="play-icon"),
                             html.Span("Play Pass", className="play-label"),
                         ],
                     ),
@@ -244,7 +245,8 @@ app.layout = html.Div(
         dcc.Store(id="analysis-cache", data=None),
         dcc.Store(id="animation-loading", data=False),
         dcc.Store(id="autoplay-signal", data=0),
-        dcc.Store(id="autoplay-done", data=0),  # dummy output for autoplay clientside callback
+        # dummy output for autoplay clientside callback
+        dcc.Store(id="autoplay-done", data=0),
     ],
 )
 
@@ -313,10 +315,10 @@ def update_pass_list(game_id: str):
     for i, pe in enumerate(passes):
         clock_min = pe.game_clock // 60
         clock_sec = pe.game_clock % 60
-        outcome = "✓" if pe.is_complete else "✗"
+        outcome = "\u2713" if pe.is_complete else "\u2717"
         label = (
             f"P{pe.period} {clock_min:02d}:{clock_sec:02d}  "
-            f"{pe.passer_name} → {pe.target_name}  {outcome}"
+            f"{pe.passer_name} \u2192 {pe.target_name}  {outcome}"
         )
         options.append({"label": label, "value": i})
 
@@ -353,7 +355,10 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
             "Select a match and pass event to begin",
             className="loading-placeholder",
         )
-        return empty_fig, placeholder, None, {"display": "none"}, False, "play-animation-btn"
+        return (
+            empty_fig, placeholder, None,
+            {"display": "none"}, False, "play-animation-btn",
+        )
 
     # Load data
     passes = _load_passes(game_id)
@@ -364,10 +369,9 @@ def update_analysis(pass_idx, top_n, selected_idx, game_id):
     result = analyze_pass_event(pass_event)
 
     # Build pitch figure
-    title = (
-        f"{match_info.home_team.short_name} vs {match_info.away_team.short_name} — "
-        f"{pass_event.passer_name}"
-    )
+    home = match_info.home_team.short_name
+    away = match_info.away_team.short_name
+    title = f"{home} vs {away} \u2014 {pass_event.passer_name}"
     fig = build_static_figure(
         result,
         top_n=top_n,
@@ -442,10 +446,13 @@ def play_animation(n_clicks, game_id, pass_idx):
         return no_update, False, no_update, False, "play-animation-btn"
 
     # Build animation figure
+    home = match_info.home_team.short_name
+    away = match_info.away_team.short_name
+    tick = "\u2713" if pass_event.is_complete else "\u2717"
     title = (
-        f"{match_info.home_team.short_name} vs {match_info.away_team.short_name} — "
-        f"{pass_event.passer_name} → {pass_event.target_name} "
-        f"({'✓' if pass_event.is_complete else '✗'})"
+        f"{home} vs {away} \u2014 "
+        f"{pass_event.passer_name} \u2192 "
+        f"{pass_event.target_name} ({tick})"
     )
     fig = build_animation_figure_3d(
         frames,
@@ -515,7 +522,7 @@ def _build_analysis_panel(
                         className="passer-name",
                     ),
                     html.Span(
-                        f" → {pass_event.target_name}",
+                        f" \u2192 {pass_event.target_name}",
                         style={"color": "#9999b3", "fontSize": "0.85rem"},
                     ),
                 ]),
@@ -554,7 +561,7 @@ def _build_analysis_panel(
         html.Div(
             className="panel-section-title",
             children=[
-                "📊",
+                "\ud83d\udcca",
                 f"PASS OPTIONS ({len(ranked)} evaluated)",
             ],
         )
@@ -629,12 +636,20 @@ def _build_analysis_panel(
 
 def _build_dimension_bars(opt) -> list:
     """Build the 5 dimension mini-bars for a pass option."""
+    cp = opt.completion_probability
+    rp = opt.receiving_pressure
+    sa = opt.space_available
+    ps = opt.penetration_score
     dims = [
-        ("Completion", opt.completion_probability, 1.0, f"{opt.completion_probability:.0%}", "#3498db"),
-        ("Zone Value", opt.zone_value, 0.60, f"{opt.zone_value:.3f}", "#9b59b6"),
-        ("Pressure", 1 - opt.receiving_pressure / 10, 1.0, f"{opt.receiving_pressure:.1f}/10", "#e67e22"),
-        ("Space", min(opt.space_available / 20, 1.0), 1.0, f"{opt.space_available:.1f}m", "#1abc9c"),
-        ("Penetration", max(0, opt.penetration_score), 1.0, f"{opt.penetration_score:.2f}", "#2ecc71"),
+        ("Completion", cp, 1.0, f"{cp:.0%}", "#3498db"),
+        ("Zone Value", opt.zone_value, 0.60,
+         f"{opt.zone_value:.3f}", "#9b59b6"),
+        ("Pressure", 1 - rp / 10, 1.0,
+         f"{rp:.1f}/10", "#e67e22"),
+        ("Space", min(sa / 20, 1.0), 1.0,
+         f"{sa:.1f}m", "#1abc9c"),
+        ("Penetration", max(0, ps), 1.0,
+         f"{ps:.2f}", "#2ecc71"),
     ]
 
     rows = []
@@ -669,7 +684,7 @@ def _build_dimension_bars(opt) -> list:
 # ---------------------------------------------------------------------------
 def main():
     """Launch the Threader Dash app."""
-    print("🧵 Threader — Starting at http://127.0.0.1:8050")
+    print("\ud83e\uddf5 Threader \u2014 Starting at http://127.0.0.1:8050")
     app.run(debug=True, use_reloader=False, host="127.0.0.1", port=8050)
 
 

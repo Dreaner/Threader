@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.data.tracking_frames import AnimationFrame
+from threader.data.pff.tracking_frames import AnimationFrame
 from threader.viz.plotly_pitch_3d import Z_MAX, draw_pitch_3d
 
 # Colors (consistent with plotly_animation.py)

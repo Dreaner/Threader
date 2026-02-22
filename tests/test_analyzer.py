@@ -7,8 +7,8 @@ Description:
     Tests for the main analyzer.
 """
 
-from threader.analysis.analyzer import _compute_team_mean_xT, analyze_snapshot
-from threader.models import BallPosition, Player, Snapshot
+from threader.metrics.pass_value.analyzer import _compute_team_mean_xT, analyze_snapshot
+from threader.core.models import BallPosition, Player, Snapshot
 
 
 def _player(x: float, y: float, pid: int, tid: int, **kw) -> Player:
@@ -119,7 +119,7 @@ class TestTeamMeanXt:
 
     def test_striker_in_box_ranked_higher_with_team_context(self):
         """When team is in midfield, a striker run into the box gets amplified."""
-        from threader.scoring.pass_score import ScoringWeights
+        from threader.metrics.pass_value.models import ScoringWeights
 
         home_tid, away_tid = 1, 2
         # Team mostly in their half, one striker making a run into the box
@@ -153,7 +153,7 @@ class TestTeamMeanXt:
 
         assert team_mean is not None
         # Striker zone value (attacking half, near box) should be well above team mean
-        from threader.scoring.zone_value import zone_value
+        from threader.metrics.pass_value.scoring.zone_value import zone_value
         striker_xt = zone_value(45.0, 0.0, attack_direction=1.0)
         assert striker_xt > team_mean, (
             f"Striker xT ({striker_xt:.3f}) should exceed team mean ({team_mean:.3f})"

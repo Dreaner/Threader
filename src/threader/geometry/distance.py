@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from threader.models import Player
+from threader.core.models import Player
 
 
 def euclidean(x1: float, y1: float, x2: float, y2: float) -> float:

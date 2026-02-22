@@ -1,9 +1,8 @@
 """
 Project: Threader
-File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: pass_score.py
-Description: 
+Description:
     Pass Score — the master scoring formula combining all 5 dimensions.
     Pass Score = (
         completion_probability × zone_value × 4.27 +  # Expected value (amplified)
@@ -12,7 +11,7 @@ Description:
     ) × (1.0 − pressure/10 × 0.01)                   # Pressure as multiplier
       × 100
     Range: 0–100
-    
+
     Key changes (v1.1):
     - zone_value amplified ×1.5 to widen gap between attacking/defensive positions
     - Pressure switched from additive penalty to multiplicative scaling
@@ -44,34 +43,17 @@ Description:
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from threader.models import PassOption, Player
-from threader.scoring.completion import completion_probability
-from threader.scoring.penetration import penetration_score
-from threader.scoring.pressure import receiving_pressure
-from threader.scoring.space import space_available
-from threader.scoring.zone_value import zone_value
-
-
-@dataclass(frozen=True)
-class ScoringWeights:
-    """Adjustable weights for the Pass Score formula.
-
-    Used by sensitivity analysis to sweep parameters.
-    Default values are Spearman-optimized (v1.2) via
-    ``scripts/optimize_weights.py``.
-    """
-
-    zone_amplifier: float = 3.005181
-    penetration_weight: float = 0.459953
-    space_weight: float = 0.000101
-    pressure_scaling: float = 0.010001
-    relative_zone_weight: float = 1.194279  # α: team-context zone adjustment
-
-
-# Default weights — used when no overrides are supplied.
-DEFAULT_WEIGHTS = ScoringWeights()
+from threader.core.models import Player
+from threader.metrics.pass_value.models import (
+    DEFAULT_WEIGHTS,
+    PassOption,
+    ScoringWeights,
+)
+from threader.metrics.pass_value.scoring.completion import completion_probability
+from threader.metrics.pass_value.scoring.penetration import penetration_score
+from threader.metrics.pass_value.scoring.pressure import receiving_pressure
+from threader.metrics.pass_value.scoring.space import space_available
+from threader.metrics.pass_value.scoring.zone_value import zone_value
 
 
 def _adjusted_zone(abs_zone: float, team_mean_xT: float | None, alpha: float) -> float:

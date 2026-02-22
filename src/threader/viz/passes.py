@@ -17,7 +17,8 @@ from __future__ import annotations
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from threader.models import AnalysisResult, Player, Snapshot
+from threader.core.models import Player, Snapshot
+from threader.metrics.pass_value.models import AnalysisResult
 from threader.viz.pitch import draw_pitch
 
 

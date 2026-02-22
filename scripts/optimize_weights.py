@@ -39,7 +39,7 @@ if str(_project_root) not in sys.path:
 
 from threader.learning.dataset import train_test_split_by_match
 from threader.learning.evaluate import evaluate_weights, rescore_with_weights
-from threader.scoring.pass_score import DEFAULT_WEIGHTS, ScoringWeights
+from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
 from threader.validation.collector import (
     ValidatedPass,
     collect_validated_passes,

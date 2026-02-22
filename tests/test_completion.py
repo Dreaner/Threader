@@ -9,8 +9,8 @@ Description:
 
 import math
 
-from threader.models import Player
-from threader.scoring.completion import completion_probability
+from threader.core.models import Player
+from threader.metrics.pass_value.scoring.completion import completion_probability
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1) -> Player:

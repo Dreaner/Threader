@@ -15,7 +15,7 @@ from threader.geometry.distance import (
     point_to_segment_distance,
     projection_parameter,
 )
-from threader.models import Player
+from threader.core.models import Player
 
 
 def is_in_passing_lane(

@@ -232,7 +232,7 @@ def main() -> None:
     print(_header("EVALUATION: SUGGESTED vs DEFAULT"))
 
     from threader.learning.evaluate import evaluate_weights
-    from threader.scoring.pass_score import ScoringWeights
+    from threader.metrics.pass_value.models import ScoringWeights
 
     if "error" not in suggestion:
         sw = suggestion["suggested_scoring_weights"]

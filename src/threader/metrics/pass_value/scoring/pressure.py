@@ -1,9 +1,8 @@
 """
 Project: Threader
-File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: pressure.py
-Description: 
+Description:
     Receiving pressure — will the receiver be under pressure?
     Calculated from the weighted distance of the 3 nearest defenders.
     Range: 0 (no pressure) → 10 (extreme pressure).
@@ -11,8 +10,8 @@ Description:
 
 from __future__ import annotations
 
+from threader.core.models import Player
 from threader.geometry.distance import player_distance
-from threader.models import Player
 
 
 def receiving_pressure(
