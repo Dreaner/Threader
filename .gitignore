@@ -210,3 +210,6 @@ __marimo__/
 data/FIFA_World_Cup_2022/
 data/EPL_2024_25/
 .validation_cache/
+
+# Generated output files (keep the directory structure, ignore the files)
+output/**/*.html

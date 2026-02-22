@@ -8,7 +8,8 @@ Description:
     Algorithm:
     1. Filter events: passer's team == team_id, optionally by period/outcome.
     2. Accumulate player positions from ALL team players in every filtered
-       snapshot → stable avg_x / avg_y per player.
+       snapshot.  x is normalized to "team attacks positive-x" before averaging
+       so that positions from Period 1 and Period 2 are comparable.
     3. Count outgoing (pass_count) and incoming (receive_count) per player.
     4. Build edges: (passer_id, target_id) → PassEdge with count + completed.
     5. Assemble and return PassNetwork.
@@ -85,10 +86,20 @@ def build_pass_network(
 
     for event in team_events:
         team_players = [p for p in event.snapshot.all_players if p.team_id == team_id]
+        if not team_players:
+            continue
+        # Normalize x to "team attacks positive-x" so that Period 1 and
+        # Period 2 positions are comparable before averaging.
+        # attack_direction returns +1.0 if the team currently attacks toward
+        # positive-x, -1.0 if toward negative-x.
+        attack_dir = event.snapshot.attack_direction(team_players[0])
         for p in team_players:
             acc = pos_accum[p.player_id]
-            acc[0] += p.x
-            acc[1] += p.y
+            # PFF rotates the entire coordinate frame 180° in P2, so both x
+            # and y flip.  Multiply both by attack_dir to get a consistent
+            # "team attacks positive-x, left-flank positive-y" frame.
+            acc[0] += p.x * attack_dir
+            acc[1] += p.y * attack_dir
             acc[2] += 1.0
             # Keep the most-informative metadata seen so far
             existing = player_meta.get(p.player_id, (None, None, None))
