@@ -1,9 +1,9 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: core/types.py
 Description:
-    Protocols and type aliases for the Threader data abstraction layer.
+    Protocols and type aliases for the PitchEcho data abstraction layer.
     Data providers (PFF, StatsBomb, etc.) implement these protocols
     to supply pass data to metrics modules.
 """
@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
-    from threader.core.models import Snapshot
+    from pitch_echo.core.models import Snapshot
 
 
 AttackDirection = float  # +1.0 or -1.0

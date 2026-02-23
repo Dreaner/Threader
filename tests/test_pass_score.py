@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: test_pass_score.py
@@ -7,11 +7,11 @@ Description:
     Tests for the overall Pass Score calculation.
 """
 
-from threader.core.models import Player
-from threader.metrics.pass_value.models import ScoringWeights
-from threader.metrics.pass_value.scoring.pass_score import _adjusted_zone, score_pass_option
-from threader.metrics.pass_value.scoring.penetration import penetration_score
-from threader.metrics.pass_value.scoring.space import space_available
+from pitch_echo.core.models import Player
+from pitch_echo.analysis.models import ScoringWeights
+from pitch_echo.scoring.pass_score import _adjusted_zone, score_pass_option
+from pitch_echo.scoring.penetration import penetration_score
+from pitch_echo.scoring.space import space_available
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1, **kw) -> Player:
@@ -152,7 +152,7 @@ class TestAttackDirection:
 
     def test_left_attacking_team_zone_flipped(self):
         """When attack_direction=-1, a player at positive x should have LOW zone."""
-        from threader.metrics.pass_value.scoring.zone_value import zone_value
+        from pitch_echo.scoring.zone_value import zone_value
 
         # Player at x=40 (would be attacking zone if direction=+1)
         val_right = zone_value(40, 0, attack_direction=1.0)
@@ -176,8 +176,8 @@ class TestAttackDirection:
 
     def test_away_team_gk_at_positive_x_ranks_low(self):
         """Full integration: away team GK at positive x (their goal) should rank last."""
-        from threader.core.models import BallPosition, Snapshot
-        from threader.metrics.pass_value.analyzer import analyze_snapshot
+        from pitch_echo.core.models import BallPosition, Snapshot
+        from pitch_echo.analysis.analyzer import analyze_snapshot
 
         home_tid, away_tid = 1, 2
         # Away team attacks LEFT (negative x).

@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Name: plotly_pitch_3d.py
 Description:
     3D football pitch rendering with Plotly.
@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.viz._pitch_utils import arc_points
+from pitch_echo.viz._pitch_utils import arc_points
 
 
 # Pitch colors (consistent with plotly_pitch.py)

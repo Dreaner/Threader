@@ -11,11 +11,11 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats as sp_stats
 
-from threader.metrics.pass_value.models import DEFAULT_WEIGHTS
-from threader.metrics.pass_value.scoring.pass_score import compute_pass_score
+from pitch_echo.analysis.models import DEFAULT_WEIGHTS
+from pitch_echo.scoring.pass_score import compute_pass_score
 
 if TYPE_CHECKING:
-    from threader.validation.collector import ValidatedPass
+    from pitch_echo.validation.collector import ValidatedPass
 
 
 # ── A. Internal Dimension Correlations ───────────────────────────────────────
@@ -184,7 +184,7 @@ def stage_consistency(records: list[ValidatedPass]) -> dict:
         return {"error": "cannot split by stage (all records in same range)"}
 
     def group_metrics(recs: list[ValidatedPass], label: str) -> dict:
-        from threader.validation.repeatability import _group_auc, _group_concordance
+        from pitch_echo.validation.repeatability import _group_auc, _group_concordance
 
         auc = _group_auc(recs)
         conc = _group_concordance(recs)

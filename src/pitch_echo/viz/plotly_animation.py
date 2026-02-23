@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-18
 Author: Xingnan Zhu
 File Name: plotly_animation.py
@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.data.pff.tracking_frames import AnimationFrame
-from threader.viz.plotly_pitch import draw_pitch
+from pitch_echo.data.pff.tracking_frames import AnimationFrame
+from pitch_echo.viz.plotly_pitch import draw_pitch
 
 # Colors (consistent with plotly_passes.py)
 HOME_COLOR = "#3498db"

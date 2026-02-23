@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: events.py
 Description:
@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from threader.core.models import BallPosition, Player, Snapshot
+from pitch_echo.core.models import BallPosition, Player, Snapshot
 
 
 @dataclass(frozen=True)

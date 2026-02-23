@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: distance.py
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from threader.core.models import Player
+from pitch_echo.core.models import Player
 
 
 def euclidean(x1: float, y1: float, x2: float, y2: float) -> float:

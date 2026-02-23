@@ -1,9 +1,9 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: core/models.py
 Description:
-    Core data models shared across all Threader modules.
+    Core data models shared across all PitchEcho modules.
     All coordinates use PFF's center-origin system:
       x ∈ [-52.5, 52.5]  (negative = left / defensive, positive = right / attacking)
       y ∈ [-34, 34]       (negative = bottom, positive = top)

@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pressure.py
 Description:
@@ -10,8 +10,8 @@ Description:
 
 from __future__ import annotations
 
-from threader.core.models import Player
-from threader.geometry.distance import player_distance
+from pitch_echo.core.models import Player
+from pitch_echo.geometry.distance import player_distance
 
 
 def receiving_pressure(

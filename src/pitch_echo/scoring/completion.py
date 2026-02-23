@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: completion.py
 Description:
@@ -11,9 +11,9 @@ Description:
 
 from __future__ import annotations
 
-from threader.core.models import Player
-from threader.geometry.distance import player_distance
-from threader.geometry.passing_lane import passing_lane_blocking
+from pitch_echo.core.models import Player
+from pitch_echo.geometry.distance import player_distance
+from pitch_echo.geometry.passing_lane import passing_lane_blocking
 
 
 def _base_probability(distance: float) -> float:

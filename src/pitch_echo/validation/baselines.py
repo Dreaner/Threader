@@ -10,13 +10,13 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
-from threader.geometry.distance import euclidean
-from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
-from threader.metrics.pass_value.scoring.pass_score import _adjusted_zone, compute_pass_score
+from pitch_echo.geometry.distance import euclidean
+from pitch_echo.analysis.models import DEFAULT_WEIGHTS, ScoringWeights
+from pitch_echo.scoring.pass_score import _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
-    from threader.metrics.pass_value.models import PassOption
-    from threader.validation.collector import ValidatedPass
+    from pitch_echo.analysis.models import PassOption
+    from pitch_echo.validation.collector import ValidatedPass
 
 
 # ---------------------------------------------------------------------------

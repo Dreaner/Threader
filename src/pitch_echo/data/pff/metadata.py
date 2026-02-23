@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: metadata.py
 Description:

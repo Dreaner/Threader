@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pass_score.py
 Description:
@@ -43,17 +43,17 @@ Description:
 
 from __future__ import annotations
 
-from threader.core.models import Player
-from threader.metrics.pass_value.models import (
+from pitch_echo.core.models import Player
+from pitch_echo.analysis.models import (
     DEFAULT_WEIGHTS,
     PassOption,
     ScoringWeights,
 )
-from threader.metrics.pass_value.scoring.completion import completion_probability
-from threader.metrics.pass_value.scoring.penetration import penetration_score
-from threader.metrics.pass_value.scoring.pressure import receiving_pressure
-from threader.metrics.pass_value.scoring.space import space_available
-from threader.metrics.pass_value.scoring.zone_value import zone_value
+from pitch_echo.scoring.completion import completion_probability
+from pitch_echo.scoring.penetration import penetration_score
+from pitch_echo.scoring.pressure import receiving_pressure
+from pitch_echo.scoring.space import space_available
+from pitch_echo.scoring.zone_value import zone_value
 
 
 def _adjusted_zone(abs_zone: float, team_mean_xT: float | None, alpha: float) -> float:

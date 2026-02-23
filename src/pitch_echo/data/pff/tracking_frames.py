@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-18
 Author: Xingnan Zhu
 File Name: tracking_frames.py
@@ -452,7 +452,7 @@ def _cached_extract(
     target_fps: int,
 ) -> list[AnimationFrame] | None:
     """Cache-friendly wrapper with hashable-only arguments."""
-    from threader.data.pff.events import PassEvent as _PE
+    from pitch_echo.data.pff.events import PassEvent as _PE
 
     # Build a minimal PassEvent just for extraction
     dummy = _PE.__new__(_PE)

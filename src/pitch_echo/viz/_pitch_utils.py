@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Name: _pitch_utils.py
 Description:
     Shared geometry utilities for pitch rendering.

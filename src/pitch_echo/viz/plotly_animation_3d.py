@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Name: plotly_animation_3d.py
 Description:
     3D Plotly animation builder for pass replay.
@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.data.pff.tracking_frames import AnimationFrame
-from threader.viz.plotly_pitch_3d import Z_MAX, draw_pitch_3d
+from pitch_echo.data.pff.tracking_frames import AnimationFrame
+from pitch_echo.viz.plotly_pitch_3d import Z_MAX, draw_pitch_3d
 
 # Colors (consistent with plotly_animation.py)
 HOME_COLOR = "#3498db"

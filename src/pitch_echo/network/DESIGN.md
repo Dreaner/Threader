@@ -77,9 +77,9 @@ class PassEdge:
     avg_pass_score: float | None  # 该传球路线的平均 Pass Score
 ```
 
-这是 Threader 区别于普通 pass network 的独特之处：
+这是 PitchEcho 区别于普通 pass network 的独特之处：
 - 普通工具只问"谁传给谁传了多少次"
-- Threader 额外问"这条传球路线的**质量**怎么样？"
+- PitchEcho 额外问"这条传球路线的**质量**怎么样？"
 
 应用场景示例：
 > 某球队 A→B 这条路线出现了 15 次，但平均 Pass Score 只有 35/100。

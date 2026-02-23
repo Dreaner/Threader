@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: penetration.py
 Description:
@@ -13,7 +13,7 @@ Description:
 
 from __future__ import annotations
 
-from threader.core.models import Player
+from pitch_echo.core.models import Player
 
 
 def penetration_score(

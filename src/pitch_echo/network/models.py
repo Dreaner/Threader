@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pass_network/models.py
 Description:
@@ -14,6 +14,10 @@ Description:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 @dataclass(frozen=True)
@@ -100,6 +104,24 @@ class PassNetwork:
             key=lambda n: n.pass_count + n.receive_count,
             reverse=True,
         )[:top_n]
+
+    def to_df(self) -> pd.DataFrame:
+        """Convert edges to a DataFrame.
+
+        Columns: passer_id, receiver_id, count, completed, completion_rate
+        """
+        import pandas as _pd
+
+        rows = []
+        for edge in self.edges.values():
+            rows.append({
+                "passer_id": edge.passer_id,
+                "receiver_id": edge.receiver_id,
+                "count": edge.count,
+                "completed": edge.completed,
+                "completion_rate": round(edge.completion_rate, 3),
+            })
+        return _pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -191,3 +213,37 @@ class NetworkMetrics:
             key=lambda p: p.pagerank,
             reverse=True,
         )[:top_n]
+
+    def to_df(self, network: PassNetwork | None = None) -> pd.DataFrame:
+        """Convert player metrics to a DataFrame.
+
+        Args:
+            network: If provided, includes player name, jersey_num, position,
+                     avg_x, avg_y, pass_count, receive_count from network nodes.
+
+        Columns: player_id, [name, jersey_num, position, avg_x, avg_y,
+                 pass_count, receive_count], degree, betweenness, pagerank
+        """
+        import pandas as _pd
+
+        rows = []
+        for pm in self.players.values():
+            row: dict = {
+                "player_id": pm.player_id,
+                "degree": round(pm.degree_centrality, 4),
+                "betweenness": round(pm.betweenness_centrality, 4),
+                "pagerank": round(pm.pagerank, 4),
+            }
+            if network and pm.player_id in network.nodes:
+                node = network.nodes[pm.player_id]
+                row.update({
+                    "name": node.name,
+                    "jersey_num": node.jersey_num,
+                    "position": node.position,
+                    "avg_x": round(node.avg_x, 1),
+                    "avg_y": round(node.avg_y, 1),
+                    "pass_count": node.pass_count,
+                    "receive_count": node.receive_count,
+                })
+            rows.append(row)
+        return _pd.DataFrame(rows)

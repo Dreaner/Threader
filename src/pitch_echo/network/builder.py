@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pass_network/builder.py
 Description:
@@ -19,8 +19,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from threader.data.pff.events import PassEvent
-from threader.metrics.pass_network.models import PassEdge, PassNetwork, PlayerNode
+from pitch_echo.data.pff.events import PassEvent
+from pitch_echo.network.models import PassEdge, PassNetwork, PlayerNode
 
 
 def _passer_team(event: PassEvent) -> int | None:

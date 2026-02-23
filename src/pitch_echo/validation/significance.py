@@ -3,7 +3,7 @@ Statistical significance tests for the Pass Score formula.
 
 Four categories:
   A. Score vs Offensive Value — does Pass Score correlate with ΔxT & lines broken?
-  B. BetterOption Concordance — does Threader agree with PFF analysts?
+  B. BetterOption Concordance — does PitchEcho agree with PFF analysts?
   C. Pressure Validation — does computed pressure match PFF annotation?
   D. Score vs Outcome — does Pass Score predict pass completion? (observational)
 """
@@ -17,7 +17,7 @@ import numpy as np
 from scipy import stats
 
 if TYPE_CHECKING:
-    from threader.validation.collector import ValidatedPass
+    from pitch_echo.validation.collector import ValidatedPass
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ def score_vs_outcome(records: list[ValidatedPass]) -> dict:
 
 
 def better_option_concordance(records: list[ValidatedPass]) -> dict:
-    """Test whether Threader ranks PFF's betterOption above the actual target.
+    """Test whether PitchEcho ranks PFF's betterOption above the actual target.
 
     - Concordance rate (% where betterOption ranked higher)
     - Binomial test vs chance (1/N_teammates)
@@ -210,7 +210,7 @@ def better_option_concordance(records: list[ValidatedPass]) -> dict:
 
 
 def pressure_validation(records: list[ValidatedPass]) -> dict:
-    """Validate Threader's pressure metric against PFF's pressureType annotation.
+    """Validate PitchEcho's pressure metric against PFF's pressureType annotation.
 
     - Mann-Whitney U on computed pressure: P vs N groups
     - AUC-ROC: can pressure score distinguish pressed from not pressed?

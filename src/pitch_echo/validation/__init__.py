@@ -1,5 +1,5 @@
 """
-Threader scoring validation framework.
+PitchEcho scoring validation framework.
 
 Statistical validation of the Pass Score formula covering:
 - Baseline comparison (random, distance-only, zone-only, etc.)

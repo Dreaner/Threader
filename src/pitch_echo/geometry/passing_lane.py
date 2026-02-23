@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: passing_lane.py
@@ -11,11 +11,11 @@ Description:
 
 from __future__ import annotations
 
-from threader.geometry.distance import (
+from pitch_echo.geometry.distance import (
     point_to_segment_distance,
     projection_parameter,
 )
-from threader.core.models import Player
+from pitch_echo.core.models import Player
 
 
 def is_in_passing_lane(

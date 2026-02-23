@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Threader Weight Optimizer — directly maximize Spearman ρ via scipy.optimize.
+PitchEcho Weight Optimizer — directly maximize Spearman ρ via scipy.optimize.
 
 Instead of fitting a regression model and heuristically mapping coefficients
 back to formula weights, this script treats Spearman ρ (Pass Score vs ΔxT)
@@ -37,10 +37,10 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from threader.learning.dataset import train_test_split_by_match
-from threader.learning.evaluate import evaluate_weights, rescore_with_weights
-from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
-from threader.validation.collector import (
+from pitch_echo.learning.dataset import train_test_split_by_match
+from pitch_echo.learning.evaluate import evaluate_weights, rescore_with_weights
+from pitch_echo.analysis.models import DEFAULT_WEIGHTS, ScoringWeights
+from pitch_echo.validation.collector import (
     ValidatedPass,
     collect_validated_passes,
     data_summary,
@@ -174,7 +174,7 @@ def _negative_combined(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Threader Weight Optimizer — maximize Spearman ρ directly",
+        description="PitchEcho Weight Optimizer — maximize Spearman ρ directly",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -258,7 +258,7 @@ def main() -> None:
     summary = data_summary(records)
 
     # ── Print header ─────────────────────────────────────────────────────
-    print(_header("THREADER WEIGHT OPTIMIZER"))
+    print(_header("PITCHECHO WEIGHT OPTIMIZER"))
     print(_kv("Matches", summary.get("matches", "?")))
     print(_kv("Total passes", summary.get("total", 0)))
     print(_kv("Metric", args.metric))

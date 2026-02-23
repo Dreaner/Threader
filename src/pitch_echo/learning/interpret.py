@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from threader.metrics.pass_value.models import ScoringWeights
+from pitch_echo.analysis.models import ScoringWeights
 
 from .models import ModelResult
 

@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16
 Author: Xingnan Zhu
 File Name: plotly_pitch.py

@@ -1,7 +1,5 @@
-"""
-Threader Dash web application (optional — requires 'app' extras).
-"""
+"""PitchEcho Dash web application (optional — requires 'app' extras)."""
 
-from threader.app.app import main
+from app.app import main
 
 __all__ = ["main"]

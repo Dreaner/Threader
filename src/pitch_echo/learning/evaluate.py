@@ -10,11 +10,11 @@ from typing import TYPE_CHECKING
 import numpy as np
 from scipy import stats
 
-from threader.metrics.pass_value.models import DEFAULT_WEIGHTS, ScoringWeights
-from threader.metrics.pass_value.scoring.pass_score import _adjusted_zone, compute_pass_score
+from pitch_echo.analysis.models import DEFAULT_WEIGHTS, ScoringWeights
+from pitch_echo.scoring.pass_score import _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
-    from threader.validation.collector import ValidatedPass
+    from pitch_echo.validation.collector import ValidatedPass
 
 
 def rescore_with_weights(

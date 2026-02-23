@@ -12,11 +12,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from threader.metrics.pass_value.analyzer import analyze_pass_event
-from threader.data.pff.events import extract_pass_events
-from threader.data.pff.events import PassEvent
-from threader.metrics.pass_value.models import AnalysisResult, PassOption
-from threader.metrics.pass_value.scoring.zone_value import zone_value
+from pitch_echo.analysis.analyzer import analyze_pass_event
+from pitch_echo.data.pff.events import extract_pass_events
+from pitch_echo.data.pff.events import PassEvent
+from pitch_echo.analysis.models import AnalysisResult, PassOption
+from pitch_echo.scoring.zone_value import zone_value
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +26,7 @@ from threader.metrics.pass_value.scoring.zone_value import zone_value
 
 @dataclass
 class ValidatedPass:
-    """A single pass with Threader analysis + PFF ground truth."""
+    """A single pass with PitchEcho analysis + PFF ground truth."""
 
     # Identifiers
     match_id: int
@@ -43,12 +43,12 @@ class ValidatedPass:
     pff_better_option_type: str | None
     pff_better_option_player_id: int | None
 
-    # Threader analysis summary
+    # PitchEcho analysis summary
     n_options: int  # total number of teammates evaluated
-    threader_top1_id: int  # player_id of Threader's #1 pick
+    top1_id: int  # player_id of PitchEcho's #1 pick
 
-    # Actual target's Threader rank & dimension scores
-    actual_target_rank: int  # 1-based rank in Threader's ranking
+    # Actual target's PitchEcho rank & dimension scores
+    actual_target_rank: int  # 1-based rank in PitchEcho's ranking
     actual_target_score: float
     actual_target_completion: float
     actual_target_zone: float
@@ -56,7 +56,7 @@ class ValidatedPass:
     actual_target_space: float
     actual_target_penetration: float
 
-    # Where PFF's betterOption player ranks in Threader (0 if not annotated / not found)
+    # Where PFF's betterOption player ranks in PitchEcho (0 if not annotated / not found)
     better_option_rank: int = 0
     better_option_score: float = 0.0
 
@@ -151,7 +151,7 @@ def _build_validated_pass(
         pff_better_option_type=pe.better_option_type,
         pff_better_option_player_id=pe.better_option_player_id,
         n_options=len(ranked),
-        threader_top1_id=ranked[0].target.player_id,
+        top1_id=ranked[0].target.player_id,
         actual_target_rank=actual_rank,
         actual_target_score=actual_option.pass_score,
         actual_target_completion=actual_option.completion_probability,

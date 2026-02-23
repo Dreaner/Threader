@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: metrics/pass_value/models.py
 Description:
@@ -10,8 +10,12 @@ Description:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
 
-from threader.core.models import Player, Snapshot
+from pitch_echo.core.models import Player, Snapshot
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 @dataclass(frozen=True)
@@ -54,6 +58,33 @@ class AnalysisResult:
     def best_option(self) -> PassOption | None:
         ranked = self.ranked_options
         return ranked[0] if ranked else None
+
+    def to_df(self) -> pd.DataFrame:
+        """Convert ranked pass options to a DataFrame.
+
+        Columns: rank, player_id, jersey_num, name, position, x, y,
+                 pass_score, completion, zone_value, pressure, space, penetration
+        """
+        import pandas as _pd
+
+        rows = []
+        for i, opt in enumerate(self.ranked_options, 1):
+            rows.append({
+                "rank": i,
+                "player_id": opt.target.player_id,
+                "jersey_num": opt.target.jersey_num,
+                "name": opt.target.name,
+                "position": opt.target.position,
+                "x": opt.target.x,
+                "y": opt.target.y,
+                "pass_score": opt.pass_score,
+                "completion": opt.completion_probability,
+                "zone_value": opt.zone_value,
+                "pressure": opt.receiving_pressure,
+                "space": opt.space_available,
+                "penetration": opt.penetration_score,
+            })
+        return _pd.DataFrame(rows)
 
 
 @dataclass(frozen=True)

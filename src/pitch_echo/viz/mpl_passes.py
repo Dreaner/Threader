@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: passes.py
@@ -17,9 +17,9 @@ from __future__ import annotations
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
-from threader.core.models import Player, Snapshot
-from threader.metrics.pass_value.models import AnalysisResult
-from threader.viz.pitch import draw_pitch
+from pitch_echo.core.models import Player, Snapshot
+from pitch_echo.analysis.models import AnalysisResult
+from pitch_echo.viz.mpl_pitch import draw_pitch
 
 
 # Rank colors: gold → silver → bronze → gray

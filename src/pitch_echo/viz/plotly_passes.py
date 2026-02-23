@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16
 Author: Xingnan Zhu
 File Name: plotly_passes.py
@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.core.models import Player, Snapshot
-from threader.metrics.pass_value.models import AnalysisResult, PassOption
-from threader.viz.plotly_pitch import draw_pitch
+from pitch_echo.core.models import Player, Snapshot
+from pitch_echo.analysis.models import AnalysisResult, PassOption
+from pitch_echo.viz.plotly_pitch import draw_pitch
 
 
 # Rank colors: gold → silver → bronze → gray

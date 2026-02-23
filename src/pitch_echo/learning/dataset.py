@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from threader.validation.collector import ValidatedPass
+    from pitch_echo.validation.collector import ValidatedPass
 
 # Feature names (order matches columns in X)
 FEATURE_NAMES = [

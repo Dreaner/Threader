@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pass_network/viz/plotly_network.py
 Description:
@@ -21,8 +21,8 @@ from __future__ import annotations
 
 import plotly.graph_objects as go
 
-from threader.metrics.pass_network.models import NetworkMetrics, PassNetwork
-from threader.viz.plotly_pitch import draw_pitch
+from pitch_echo.network.models import NetworkMetrics, PassNetwork
+from pitch_echo.viz.plotly_pitch import draw_pitch
 
 # ---------------------------------------------------------------------------
 # Constants

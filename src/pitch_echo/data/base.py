@@ -1,15 +1,15 @@
 """
-Data provider protocol for Threader.
+Data provider protocol for PitchEcho.
 
 Defines the abstract interface that all data providers (PFF, StatsBomb,
-Metrica, etc.) must satisfy to supply pass events to Threader metrics.
+Metrica, etc.) must satisfy to supply pass events to PitchEcho metrics.
 """
 
 from __future__ import annotations
 
 from typing import Protocol
 
-from threader.core.models import Snapshot
+from pitch_echo.core.models import Snapshot
 
 
 class PassDataProvider(Protocol):

@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16
 Author: Xingnan Zhu
 File Name: app.py
@@ -9,8 +9,8 @@ Description:
     Right panel: Analysis results with ranked pass options.
 
     Usage:
-        uv run threader              # via entry point
-        uv run python -m threader.app  # direct
+        uv run pitch-echo-app        # via entry point
+        uv run python app/app.py     # direct
 """
 
 from __future__ import annotations
@@ -22,13 +22,13 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import Input, Output, State, ctx, dcc, html, no_update
 
-from threader.data.pff.events import PassEvent, extract_pass_events
-from threader.data.pff.metadata import load_match_info
-from threader.data.pff.tracking_frames import get_animation_frames_cached
-from threader.metrics.pass_value.analyzer import analyze_pass_event
-from threader.metrics.pass_value.models import AnalysisResult
-from threader.viz.plotly_animation_3d import build_animation_figure_3d
-from threader.metrics.pass_value.viz.plotly_passes import (
+from pitch_echo.data.pff.events import PassEvent, extract_pass_events
+from pitch_echo.data.pff.metadata import load_match_info
+from pitch_echo.data.pff.tracking_frames import get_animation_frames_cached
+from pitch_echo.analysis.analyzer import analyze_pass_event
+from pitch_echo.analysis.models import AnalysisResult
+from pitch_echo.viz.plotly_animation_3d import build_animation_figure_3d
+from pitch_echo.viz.plotly_passes import (
     build_analysis_figure as build_static_figure,
 )
 
@@ -103,12 +103,12 @@ app = dash.Dash(
     __name__,
     assets_folder=str(ASSETS_DIR),
     external_stylesheets=[dbc.themes.DARKLY],
-    title="Threader — Pass Analysis",
+    title="PitchEcho — Pass Analysis",
     update_title=None,
     suppress_callback_exceptions=True,
 )
 
-# Expose WSGI server for deployment (gunicorn threader.app:server)
+# Expose WSGI server for deployment (gunicorn app.app:server)
 server = app.server
 
 
@@ -683,8 +683,8 @@ def _build_dimension_bars(opt) -> list:
 # Entry Point
 # ---------------------------------------------------------------------------
 def main():
-    """Launch the Threader Dash app."""
-    print("\ud83e\uddf5 Threader \u2014 Starting at http://127.0.0.1:8050")
+    """Launch the PitchEcho Dash app."""
+    print("\ud83e\uddf5 PitchEcho \u2014 Starting at http://127.0.0.1:8050")
     app.run(debug=True, use_reloader=False, host="127.0.0.1", port=8050)
 
 

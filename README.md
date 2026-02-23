@@ -1,4 +1,4 @@
-# Threader
+# PitchEcho
 
 **AlphaGo-inspired football pass analysis — find the optimal pass target in any match snapshot.**
 

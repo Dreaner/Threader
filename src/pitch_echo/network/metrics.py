@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 Author: Xingnan Zhu
 File Name: pass_network/metrics.py
 Description:
@@ -20,7 +20,7 @@ from __future__ import annotations
 import heapq
 from collections import defaultdict
 
-from threader.metrics.pass_network.models import (
+from pitch_echo.network.models import (
     NetworkMetrics,
     PassNetwork,
     PlayerMetrics,
