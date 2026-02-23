@@ -1,6 +1,6 @@
 [project]
 name = "pitch-echo"
-version = "1.0.0"
+version = "0.1.0"
 description = "A Python library for football pass analysis research."
 readme = "README.md"
 license = "GPL-3.0-or-later"
@@ -39,9 +39,6 @@ learning = [
     "scikit-learn>=1.4",
     "xgboost>=2.0",
 ]
-
-[project.scripts]
-pitch-echo-app = "app.app:main"
 
 [build-system]
 requires = ["hatchling"]
