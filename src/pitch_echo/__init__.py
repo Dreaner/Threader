@@ -14,7 +14,8 @@ Usage::
     )
 """
 
-__version__ = "0.1.0"
+from importlib.metadata import version
+__version__ = version("pitch-echo")
 
 # Core models
 from pitch_echo.core.models import BallPosition, Player, Snapshot
