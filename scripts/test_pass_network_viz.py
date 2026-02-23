@@ -21,10 +21,10 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from threader.data.pff.events import extract_pass_events
-from threader.data.pff.metadata import load_match_info
-from threader.metrics.pass_network import build_pass_network, compute_metrics
-from threader.metrics.pass_network.viz import build_network_figure
+from pitch_echo.data.pff.events import extract_pass_events
+from pitch_echo.data.pff.metadata import load_match_info
+from pitch_echo.network import build_pass_network, compute_metrics
+from pitch_echo.viz.plotly_network import build_network_figure
 
 DATA_ROOT = _project_root / "data" / "FIFA_World_Cup_2022"
 EVENT_DIR = DATA_ROOT / "Event Data"

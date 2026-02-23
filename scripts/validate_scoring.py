@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Threader Scoring Validation — CLI entry point.
+PitchEcho Scoring Validation — CLI entry point.
 
 Runs the full validation framework:
   1. Collect all passes from match data → ValidatedPass records
@@ -417,7 +417,7 @@ def print_consistency(results: dict) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Threader Scoring Validation Report",
+        description="PitchEcho Scoring Validation Report",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -445,7 +445,7 @@ def main() -> None:
     t0 = time.time()
 
     # ── 1. Collect data ──────────────────────────────────────────────────
-    from threader.validation.collector import (
+    from pitch_echo.validation.collector import (
         collect_validated_passes,
         data_summary,
         load_cache,
@@ -480,27 +480,27 @@ def main() -> None:
 
     # ── Print report ─────────────────────────────────────────────────────
     print("\n" + "═" * 60)
-    print("  THREADER SCORING VALIDATION REPORT")
+    print("  PITCHECHO SCORING VALIDATION REPORT")
     print("═" * 60)
 
     print_data_summary(summary)
 
     # ── 2. Baselines ─────────────────────────────────────────────────────
     print("\n  Running baselines...", file=sys.stderr, flush=True)
-    from threader.validation.baselines import run_all_baselines
+    from pitch_echo.validation.baselines import run_all_baselines
     baseline_results = run_all_baselines(records)
     print_baselines(baseline_results)
 
     # ── 3. Significance ──────────────────────────────────────────────────
     print("  Running significance tests...", file=sys.stderr, flush=True)
-    from threader.validation.significance import run_significance_tests
+    from pitch_echo.validation.significance import run_significance_tests
     sig_results = run_significance_tests(records)
     print_significance(sig_results)
 
     # ── 4. Sensitivity ───────────────────────────────────────────────────
     if not args.skip_sensitivity:
         print("  Running sensitivity analysis...", file=sys.stderr, flush=True)
-        from threader.validation.sensitivity import run_sensitivity
+        from pitch_echo.validation.sensitivity import run_sensitivity
         sens_results = run_sensitivity(records)
         print_sensitivity(sens_results)
     else:
@@ -509,13 +509,13 @@ def main() -> None:
 
     # ── 5. Repeatability ─────────────────────────────────────────────────
     print("  Running repeatability checks...", file=sys.stderr, flush=True)
-    from threader.validation.repeatability import run_repeatability
+    from pitch_echo.validation.repeatability import run_repeatability
     rep_results = run_repeatability(records)
     print_repeatability(rep_results)
 
     # ── 6. Consistency ───────────────────────────────────────────────────
     print("  Running consistency checks...", file=sys.stderr, flush=True)
-    from threader.validation.consistency import run_consistency
+    from pitch_echo.validation.consistency import run_consistency
     con_results = run_consistency(records)
     print_consistency(con_results)
 

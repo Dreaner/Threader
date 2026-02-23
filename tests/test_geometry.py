@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: test_geometry.py
@@ -9,14 +9,14 @@ Description:
 
 import math
 
-from threader.geometry.distance import (
+from pitch_echo.geometry.distance import (
     euclidean,
     player_distance,
     point_to_segment_distance,
     projection_parameter,
 )
-from threader.geometry.passing_lane import is_in_passing_lane, passing_lane_blocking
-from threader.core.models import Player
+from pitch_echo.geometry.passing_lane import is_in_passing_lane, passing_lane_blocking
+from pitch_echo.core.models import Player
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1) -> Player:

@@ -1,5 +1,5 @@
 """
-Project: Threader
+Project: PitchEcho
 File Created: 2026-02-16 23:11:04
 Author: Xingnan Zhu
 File Name: test_completion.py
@@ -9,8 +9,8 @@ Description:
 
 import math
 
-from threader.core.models import Player
-from threader.metrics.pass_value.scoring.completion import completion_probability
+from pitch_echo.core.models import Player
+from pitch_echo.scoring.completion import completion_probability
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1) -> Player:

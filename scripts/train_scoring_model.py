@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Threader Weight Learning — train regression models to optimize Pass Score weights.
+PitchEcho Weight Learning — train regression models to optimize Pass Score weights.
 
 Pipeline:
   1. Collect / load validated passes (same as validation framework)
@@ -46,7 +46,7 @@ def _kv(key: str, value, indent: int = 4) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Threader Weight Learning — train models to optimize Pass Score",
+        description="PitchEcho Weight Learning — train models to optimize Pass Score",
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -79,7 +79,7 @@ def main() -> None:
     t0 = time.time()
 
     # ── 1. Collect data ──────────────────────────────────────────────────
-    from threader.validation.collector import (
+    from pitch_echo.validation.collector import (
         collect_validated_passes,
         data_summary,
         load_cache,
@@ -117,7 +117,7 @@ def main() -> None:
     summary = data_summary(records)
 
     # ── Print header ─────────────────────────────────────────────────────
-    print(_header("THREADER WEIGHT LEARNING"))
+    print(_header("PITCHECHO WEIGHT LEARNING"))
     print(_kv("Matches", summary.get("matches", "?")))
     print(_kv("Total passes", summary.get("total", 0)))
     print(_kv("Target variable", args.target))
@@ -131,7 +131,7 @@ def main() -> None:
     print(_kv("Lines broken ≥1", f"{sum(1 for x in lbs if x >= 1)} ({sum(1 for x in lbs if x >= 1)/len(lbs)*100:.1f}%)"))
 
     # ── 2. Split data ────────────────────────────────────────────────────
-    from threader.learning.dataset import build_dataset, train_test_split_by_match
+    from pitch_echo.learning.dataset import build_dataset, train_test_split_by_match
 
     train_recs, test_recs = train_test_split_by_match(
         records, test_fraction=args.test_fraction, seed=42,
@@ -150,7 +150,7 @@ def main() -> None:
     # ── 3. Train models ──────────────────────────────────────────────────
     print(_header("MODEL TRAINING"))
 
-    from threader.learning.models import train_all_models
+    from pitch_echo.learning.models import train_all_models
 
     results = train_all_models(X_train, y_train, X_test, y_test, feat_names, is_binary)
 
@@ -178,7 +178,7 @@ def main() -> None:
     # ── 4. Interpret & suggest weights ───────────────────────────────────
     print(_header("WEIGHT SUGGESTION"))
 
-    from threader.learning.interpret import (
+    from pitch_echo.learning.interpret import (
         interpret_interactions,
         interpret_linear_coefficients,
         interpret_xgboost,
@@ -231,8 +231,8 @@ def main() -> None:
     # ── 5. Evaluate suggested weights ────────────────────────────────────
     print(_header("EVALUATION: SUGGESTED vs DEFAULT"))
 
-    from threader.learning.evaluate import evaluate_weights
-    from threader.metrics.pass_value.models import ScoringWeights
+    from pitch_echo.learning.evaluate import evaluate_weights
+    from pitch_echo.analysis.models import ScoringWeights
 
     if "error" not in suggestion:
         sw = suggestion["suggested_scoring_weights"]

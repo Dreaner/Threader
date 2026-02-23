@@ -1164,6 +1164,69 @@ wheels = [
 ]
 
 [[package]]
+name = "pitch-echo"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "kloppy" },
+    { name = "numpy" },
+    { name = "pandas" },
+]
+
+[package.optional-dependencies]
+app = [
+    { name = "dash" },
+    { name = "dash-bootstrap-components" },
+    { name = "matplotlib" },
+    { name = "plotly" },
+    { name = "pyarrow" },
+]
+deploy = [
+    { name = "gunicorn" },
+]
+dev = [
+    { name = "pytest" },
+    { name = "ruff" },
+]
+learning = [
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tabulate" },
+    { name = "xgboost" },
+]
+validation = [
+    { name = "scipy" },
+    { name = "tabulate" },
+]
+viz = [
+    { name = "matplotlib" },
+    { name = "plotly" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dash", marker = "extra == 'app'", specifier = ">=2.17" },
+    { name = "dash-bootstrap-components", marker = "extra == 'app'", specifier = ">=1.6" },
+    { name = "gunicorn", marker = "extra == 'deploy'", specifier = ">=22.0" },
+    { name = "kloppy", specifier = ">=3.18" },
+    { name = "matplotlib", marker = "extra == 'viz'", specifier = ">=3.8" },
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pandas", specifier = ">=2.1" },
+    { name = "pitch-echo", extras = ["viz"], marker = "extra == 'app'" },
+    { name = "plotly", marker = "extra == 'viz'", specifier = ">=5.22" },
+    { name = "pyarrow", marker = "extra == 'app'", specifier = ">=15.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
+    { name = "scikit-learn", marker = "extra == 'learning'", specifier = ">=1.4" },
+    { name = "scipy", marker = "extra == 'learning'", specifier = ">=1.12" },
+    { name = "scipy", marker = "extra == 'validation'", specifier = ">=1.12" },
+    { name = "tabulate", marker = "extra == 'learning'", specifier = ">=0.9" },
+    { name = "tabulate", marker = "extra == 'validation'", specifier = ">=0.9" },
+    { name = "xgboost", marker = "extra == 'learning'", specifier = ">=2.0" },
+]
+provides-extras = ["viz", "app", "dev", "deploy", "validation", "learning"]
+
+[[package]]
 name = "plotly"
 version = "6.5.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1556,64 +1619,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
 ]
-
-[[package]]
-name = "threader"
-version = "0.2.0"
-source = { editable = "." }
-dependencies = [
-    { name = "kloppy" },
-    { name = "numpy" },
-    { name = "pandas" },
-]
-
-[package.optional-dependencies]
-app = [
-    { name = "dash" },
-    { name = "dash-bootstrap-components" },
-    { name = "matplotlib" },
-    { name = "plotly" },
-    { name = "pyarrow" },
-]
-deploy = [
-    { name = "gunicorn" },
-]
-dev = [
-    { name = "pytest" },
-    { name = "ruff" },
-]
-learning = [
-    { name = "scikit-learn" },
-    { name = "scipy" },
-    { name = "tabulate" },
-    { name = "xgboost" },
-]
-validation = [
-    { name = "scipy" },
-    { name = "tabulate" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "dash", marker = "extra == 'app'", specifier = ">=2.17" },
-    { name = "dash-bootstrap-components", marker = "extra == 'app'", specifier = ">=1.6" },
-    { name = "gunicorn", marker = "extra == 'deploy'", specifier = ">=22.0" },
-    { name = "kloppy", specifier = ">=3.18" },
-    { name = "matplotlib", marker = "extra == 'app'", specifier = ">=3.8" },
-    { name = "numpy", specifier = ">=1.26" },
-    { name = "pandas", specifier = ">=2.1" },
-    { name = "plotly", marker = "extra == 'app'", specifier = ">=5.22" },
-    { name = "pyarrow", marker = "extra == 'app'", specifier = ">=15.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "scikit-learn", marker = "extra == 'learning'", specifier = ">=1.4" },
-    { name = "scipy", marker = "extra == 'learning'", specifier = ">=1.12" },
-    { name = "scipy", marker = "extra == 'validation'", specifier = ">=1.12" },
-    { name = "tabulate", marker = "extra == 'learning'", specifier = ">=0.9" },
-    { name = "tabulate", marker = "extra == 'validation'", specifier = ">=0.9" },
-    { name = "xgboost", marker = "extra == 'learning'", specifier = ">=2.0" },
-]
-provides-extras = ["app", "dev", "deploy", "validation", "learning"]
 
 [[package]]
 name = "threadpoolctl"
