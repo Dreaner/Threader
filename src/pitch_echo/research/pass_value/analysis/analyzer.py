@@ -11,9 +11,9 @@ Description:
 from __future__ import annotations
 
 from pitch_echo.core.models import Player, Snapshot
-from pitch_echo.analysis.models import AnalysisResult
-from pitch_echo.scoring.pass_score import score_pass_option
-from pitch_echo.scoring.zone_value import zone_value
+from pitch_echo.research.pass_value.analysis.models import AnalysisResult
+from pitch_echo.research.pass_value.scoring.pass_score import score_pass_option
+from pitch_echo.research.pass_value.scoring.zone_value import zone_value
 
 
 def analyze_snapshot(

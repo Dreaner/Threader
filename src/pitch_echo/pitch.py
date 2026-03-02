@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
     import plotly.graph_objects as go
 
-    from pitch_echo.analysis.models import AnalysisResult
+    from pitch_echo.research.pass_value.analysis.models import AnalysisResult
     from pitch_echo.network.models import NetworkMetrics, PassNetwork
 
 

@@ -12,11 +12,11 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from pitch_echo.analysis.analyzer import analyze_pass_event
+from pitch_echo.research.pass_value.analysis.analyzer import analyze_pass_event
 from pitch_echo.data.pff.events import extract_pass_events
 from pitch_echo.data.pff.events import PassEvent
-from pitch_echo.analysis.models import AnalysisResult, PassOption
-from pitch_echo.scoring.zone_value import zone_value
+from pitch_echo.research.pass_value.analysis.models import AnalysisResult, PassOption
+from pitch_echo.research.pass_value.scoring.zone_value import zone_value
 
 
 # ---------------------------------------------------------------------------

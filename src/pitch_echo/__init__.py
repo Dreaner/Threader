@@ -1,30 +1,29 @@
 """
-PitchEcho — A Python library for football pass analysis research.
+PitchEcho — A Python toolkit for football spatial data analysis.
 
-Usage::
+Public API
+----------
+- **Core models**: ``Player``, ``Snapshot``, ``BallPosition``
+- **Data loading**: PFF FC event parser (``extract_pass_events``)
+- **Visualization**: ``Pitch`` class with matplotlib / Plotly backends
+- **Pass Network**: ``build_pass_network``, ``compute_metrics``
 
-    from pitch_echo import (
-        Player, BallPosition, Snapshot,
-        PassOption, AnalysisResult, ScoringWeights,
-        analyze_snapshot, analyze_pass_event,
-        PassNetwork, PassEdge, PlayerNode,
-        NetworkMetrics, PlayerMetrics,
-        build_pass_network, compute_metrics,
-        load_pff, Pitch,
-    )
+Research modules (pass scoring, validation, ML learning) live under
+``pitch_echo.research`` and are **not** part of the public API — they
+may change without notice between versions.
 """
 
 from importlib.metadata import version
+
 __version__ = version("pitch-echo")
 
-# Core models
+# ── Core models ──────────────────────────────────────────────────────
 from pitch_echo.core.models import BallPosition, Player, Snapshot
 
-# Analysis
-from pitch_echo.analysis.analyzer import analyze_pass_event, analyze_snapshot
-from pitch_echo.analysis.models import AnalysisResult, PassOption, ScoringWeights
+# ── Data loading ─────────────────────────────────────────────────────
+from pitch_echo.data.pff.events import PassEvent, extract_pass_events
 
-# Network
+# ── Pass Network ─────────────────────────────────────────────────────
 from pitch_echo.network.builder import build_pass_network
 from pitch_echo.network.metrics import compute_metrics
 from pitch_echo.network.models import (
@@ -35,33 +34,25 @@ from pitch_echo.network.models import (
     PlayerNode,
 )
 
-# Visualization
+# ── Visualization ────────────────────────────────────────────────────
 from pitch_echo.pitch import Pitch
-
-# Data loading convenience
-from pitch_echo.data.pff.events import extract_pass_events as load_pff
 
 __all__ = [
     # Core
     "BallPosition",
     "Player",
     "Snapshot",
-    # Analysis
-    "AnalysisResult",
-    "PassOption",
-    "ScoringWeights",
-    "analyze_pass_event",
-    "analyze_snapshot",
+    # Data
+    "PassEvent",
+    "extract_pass_events",
     # Network
+    "build_pass_network",
+    "compute_metrics",
     "NetworkMetrics",
     "PassEdge",
     "PassNetwork",
     "PlayerMetrics",
     "PlayerNode",
-    "build_pass_network",
-    "compute_metrics",
-    # Data
-    "load_pff",
-    # Viz
+    # Visualization
     "Pitch",
 ]

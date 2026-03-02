@@ -1,7 +1,7 @@
 [project]
 name = "pitch-echo"
 version = "0.1.0"
-description = "A Python library for football pass analysis research."
+description = "A Python toolkit for football spatial data analysis."
 readme = "README.md"
 license = "GPL-3.0-or-later"
 requires-python = ">=3.12"
@@ -39,6 +39,9 @@ learning = [
     "tabulate>=0.9",
     "scikit-learn>=1.4",
     "xgboost>=2.0",
+]
+research = [
+    "pitch-echo[validation,learning]",
 ]
 
 [build-system]

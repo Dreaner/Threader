@@ -44,16 +44,16 @@ Description:
 from __future__ import annotations
 
 from pitch_echo.core.models import Player
-from pitch_echo.analysis.models import (
+from pitch_echo.research.pass_value.analysis.models import (
     DEFAULT_WEIGHTS,
     PassOption,
     ScoringWeights,
 )
-from pitch_echo.scoring.completion import completion_probability
-from pitch_echo.scoring.penetration import penetration_score
-from pitch_echo.scoring.pressure import receiving_pressure
-from pitch_echo.scoring.space import space_available
-from pitch_echo.scoring.zone_value import zone_value
+from pitch_echo.research.pass_value.scoring.completion import completion_probability
+from pitch_echo.research.pass_value.scoring.penetration import penetration_score
+from pitch_echo.research.pass_value.scoring.pressure import receiving_pressure
+from pitch_echo.research.pass_value.scoring.space import space_available
+from pitch_echo.research.pass_value.scoring.zone_value import zone_value
 
 
 def _adjusted_zone(abs_zone: float, team_mean_xT: float | None, alpha: float) -> float:

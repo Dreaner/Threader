@@ -1218,6 +1218,12 @@ learning = [
     { name = "tabulate" },
     { name = "xgboost" },
 ]
+research = [
+    { name = "scikit-learn" },
+    { name = "scipy" },
+    { name = "tabulate" },
+    { name = "xgboost" },
+]
 validation = [
     { name = "scipy" },
     { name = "tabulate" },
@@ -1237,6 +1243,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", specifier = ">=2.1" },
     { name = "pitch-core", editable = "../PitchCore" },
+    { name = "pitch-echo", extras = ["validation", "learning"], marker = "extra == 'research'" },
     { name = "pitch-echo", extras = ["viz"], marker = "extra == 'app'" },
     { name = "plotly", marker = "extra == 'viz'", specifier = ">=5.22" },
     { name = "pyarrow", marker = "extra == 'app'", specifier = ">=15.0" },
@@ -1249,7 +1256,7 @@ requires-dist = [
     { name = "tabulate", marker = "extra == 'validation'", specifier = ">=0.9" },
     { name = "xgboost", marker = "extra == 'learning'", specifier = ">=2.0" },
 ]
-provides-extras = ["viz", "app", "dev", "deploy", "validation", "learning"]
+provides-extras = ["viz", "app", "dev", "deploy", "validation", "learning", "research"]
 
 [[package]]
 name = "plotly"

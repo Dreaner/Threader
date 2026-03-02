@@ -10,7 +10,7 @@ Description:
 import math
 
 from pitch_echo.core.models import Player
-from pitch_echo.scoring.completion import completion_probability
+from pitch_echo.research.pass_value.scoring.completion import completion_probability
 
 
 def _player(x: float, y: float, pid: int = 1, tid: int = 1) -> Player:

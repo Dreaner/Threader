@@ -25,8 +25,8 @@ from dash import Input, Output, State, ctx, dcc, html, no_update
 from pitch_echo.data.pff.events import PassEvent, extract_pass_events
 from pitch_echo.data.pff.metadata import load_match_info
 from pitch_echo.data.pff.tracking_frames import get_animation_frames_cached
-from pitch_echo.analysis.analyzer import analyze_pass_event
-from pitch_echo.analysis.models import AnalysisResult
+from pitch_echo.research.pass_value.analysis.analyzer import analyze_pass_event
+from pitch_echo.research.pass_value.analysis.models import AnalysisResult
 from pitch_echo.viz.plotly_animation_3d import build_animation_figure_3d
 from pitch_echo.viz.plotly_passes import (
     build_analysis_figure as build_static_figure,
