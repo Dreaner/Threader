@@ -1,17 +1,13 @@
 # PitchEcho
 
-**AlphaGo-inspired football pass analysis — find the optimal pass target in any match snapshot.**
+**A Python toolkit for football spatial data analysis.**
 
-Just as AlphaGo evaluates every possible move on the board, PitchEcho freezes a moment in a football match and asks: *who is the best player to pass to?*
+PitchEcho provides tools for loading, analyzing, and visualizing football positional data — built around the PFF FC open dataset (FIFA World Cup 2022, 64 matches).
 
-```
-Scenario: De Bruyne receives the ball at the center circle
-  1st choice → Haaland       Pass Score: 78
-  2nd choice → Foden          Pass Score: 76
-  3rd choice → Rodri          Pass Score: 61
-```
+The library has two distinct layers:
 
-Built on **FIFA World Cup 2022** data (64 matches, PFF FC format).
+- **Public API** (`pip install pitch-echo`) — stable tools for data loading, pitch visualization, and pass network analysis.
+- **Research modules** (`pitch_echo.research.*`) — experimental metrics under active development, not part of the public API.
 
 ---
 
@@ -24,9 +20,9 @@ pip install pitch-echo
 **Optional extras:**
 
 ```bash
-pip install "pitch-echo[viz]"        # matplotlib + plotly visualizations
-pip install "pitch-echo[validation]" # scipy + tabulate (validation scripts)
-pip install "pitch-echo[learning]"   # scikit-learn + xgboost (ML weight training)
+pip install "pitch-echo[viz]"       # matplotlib + plotly visualizations
+pip install "pitch-echo[research]"  # scipy, scikit-learn, xgboost (research scripts)
+pip install "pitch-echo[app]"       # Dash interactive web app
 ```
 
 **Requirements:** Python ≥ 3.12
@@ -35,52 +31,92 @@ pip install "pitch-echo[learning]"   # scikit-learn + xgboost (ML weight trainin
 
 ## Quick Start
 
+### Data loading
+
 ```python
-from pitch_echo import (
-    analyze_pass_event,
-    analyze_snapshot,
-    build_pass_network,
-    compute_metrics,
-    load_pff,
-)
+from pitch_echo import extract_pass_events
 
-# Load pass events from PFF data
-events = load_pff("path/to/events.json", metadata, roster)
+events = extract_pass_events("data/FIFA_World_Cup_2022/Event Data/3812.json")
+print(f"{len(events)} pass events loaded")
+print(events[0])  # PassEvent with snapshot, passer_id, target_id, outcome, …
+```
 
-# Analyze a single pass event
-result = analyze_pass_event(events[0])
-for option in result.ranked_options:
-    print(f"{option.player.name}: Pass Score {option.pass_score:.1f}")
+### Pitch visualization
 
-# Build a pass network for one team across the match
-network = build_pass_network(events, team_id="home")
+```python
+from pitch_echo import Pitch
+
+pitch = Pitch(backend="plotly")
+fig = pitch.draw()
+fig.show()
+```
+
+### Pass network
+
+```python
+from pitch_echo import extract_pass_events, build_pass_network, compute_metrics, Pitch
+
+events = extract_pass_events("data/FIFA_World_Cup_2022/Event Data/3812.json")
+
+network = build_pass_network(events, team_id=3812)
 metrics = compute_metrics(network)
-print(f"Network density: {metrics.density:.3f}")
+
+# Graph metrics per player
+for pid, pm in metrics.player_metrics.items():
+    print(f"{pid}: degree={pm.degree_centrality:.3f}  pagerank={pm.pagerank:.3f}")
+
+# Render on pitch
+pitch = Pitch(backend="plotly")
+fig = pitch.pass_network(network, metrics=metrics)
+fig.show()
 ```
 
 ---
 
-## How It Works
+## Research: Pass Value
 
-### The AlphaGo Analogy
+The `pitch_echo.research` sub-package contains experimental work that is not yet stable enough for the public API.
 
-| AlphaGo | PitchEcho |
-|---------|-----------|
-| Board state (19×19 grid + stones) | Match snapshot (22 player positions) |
-| Move selection | Pass target selection |
-| Win rate evaluation | **Pass Score** evaluation (0–100) |
-| 1st / 2nd / 3rd choice ranking | Pass option ranking |
+> **⚠️ Research modules may change without notice between versions.**
 
-### Pass Score — The Core Metric
+### Pass Score — AlphaGo-inspired pass target evaluation
 
-Every potential pass target is evaluated across **5 dimensions**, combined into a single 0–100 score:
+Inspired by AlphaGo's move evaluation, Pass Score freezes a match snapshot and asks: *who is the best player to pass to?*
+
+```
+Scenario: De Bruyne receives the ball at the center circle
+  1st choice → Haaland       Pass Score: 78
+  2nd choice → Foden          Pass Score: 76
+  3rd choice → Rodri          Pass Score: 61
+```
+
+```python
+from pitch_echo import extract_pass_events
+from pitch_echo.research.pass_value import analyze_pass_event
+
+events = extract_pass_events("data/FIFA_World_Cup_2022/Event Data/3812.json")
+
+result = analyze_pass_event(events[42])
+print(f"Passer: {result.passer.name}")
+for i, opt in enumerate(result.ranked_options[:3], 1):
+    print(
+        f"  #{i} {opt.target.name:<20} "
+        f"Score={opt.pass_score:.1f}  "
+        f"xT={opt.zone_value:.3f}  "
+        f"Completion={opt.completion_probability:.2f}"
+    )
+```
+
+### Pass Score formula
+
+Every potential receiver is scored across **5 dimensions**:
 
 ```
 Pass Score = (
-    completion × zone_value × 1.5     # Expected value (amplified)
-  + penetration × 0.20                # Forward progress bonus
-  + space × 0.001                     # Space tiebreaker (capped at 15m)
-) × (1 − pressure/10 × 0.20)         # Pressure as multiplier
+    completion × zone_value × 3.01     # Expected value (xT-amplified)
+  + penetration × 0.46                 # Forward progress
+  + space × 0.0001                     # Space tiebreaker (capped 15m)
+) × (1 − pressure/10 × 0.01)          # Pressure multiplier
   × 100
 ```
 
@@ -89,30 +125,24 @@ Pass Score = (
 | **Completion Probability** | Can this pass reach its target? (distance decay + lane obstruction) | 0 – 1 |
 | **Zone Value (xT)** | How dangerous is the receiver's position? (Expected Threat 12×8 grid) | 0 – 0.45 |
 | **Receiving Pressure** | Will the receiver be under pressure? (3 nearest defenders, weighted) | 0 – 10 |
-| **Space Available** | How much room does the receiver have? (nearest opponent, capped at 15m) | 0 – 15m |
-| **Penetration Score** | How much forward progress does this pass achieve? (distance + defenders bypassed) | -0.3 – 1.0 |
+| **Space Available** | How much room does the receiver have? (nearest opponent, capped 15m) | 0 – 15m |
+| **Penetration Score** | How much forward progress does this pass achieve? (x-gain + defenders bypassed) | -0.3 – 1.0 |
 
-Weights were optimized via `scipy.optimize.differential_evolution` maximizing Spearman ρ(Pass Score, ΔxT) across all 64 World Cup matches (ρ = 0.654, AUC = 0.768).
+Weights were optimized via `scipy.optimize.differential_evolution` maximizing Spearman ρ(Pass Score, ΔxT) across all 64 World Cup matches (ρ = 0.680, AUC = 0.777).
 
-### Pass Network Analysis
-
-Beyond individual pass decisions, PitchEcho can build a **pass network** for a team across a match — mapping the passing structure and identifying key players.
+### Visualize on pitch
 
 ```python
-network = build_pass_network(events, team_id="home", completed_only=True)
-metrics = compute_metrics(network)
+from pitch_echo import Pitch, extract_pass_events
+from pitch_echo.research.pass_value import analyze_pass_event
 
-# Graph-theory metrics for each player
-for player_id, pm in metrics.player_metrics.items():
-    print(f"{player_id}: centrality={pm.degree_centrality:.3f}, pagerank={pm.pagerank:.3f}")
+events = extract_pass_events("data/FIFA_World_Cup_2022/Event Data/3812.json")
+result = analyze_pass_event(events[42])
+
+pitch = Pitch(backend="plotly")
+fig = pitch.pass_options(result, top_n=3)
+fig.show()
 ```
-
-| Network Metric | What it measures |
-|---------------|-----------------|
-| **Density** | How evenly distributed are passing connections? |
-| **Degree Centrality** | Who has the most unique passing partners? |
-| **Betweenness Centrality** | Who is the passing "middleman"? |
-| **PageRank** | Who receives passes from important players? |
 
 ---
 
@@ -120,46 +150,67 @@ for player_id, pm in metrics.player_metrics.items():
 
 ```
 src/pitch_echo/
-├── core/
-│   ├── models.py           # Core data models (Player, Snapshot, BallPosition)
-│   └── types.py            # Type aliases
-├── analysis/
-│   ├── analyzer.py         # Pass analysis engine (analyze_snapshot / analyze_pass_event)
-│   └── models.py           # AnalysisResult, PassOption, ScoringWeights
-├── scoring/
-│   ├── pass_score.py       # Master Pass Score formula
-│   ├── completion.py       # Completion probability (distance + lane blocking)
-│   ├── zone_value.py       # xT Expected Threat grid (12×8)
-│   ├── pressure.py         # Receiving pressure (weighted nearest defenders)
-│   ├── space.py            # Space available (nearest opponent, capped 15m)
-│   └── penetration.py      # Penetration score (forward gain + defenders bypassed)
-├── network/
-│   ├── builder.py          # Pass network construction
-│   ├── metrics.py          # Graph metrics (density, centrality, PageRank)
-│   └── models.py           # PassNetwork, PassEdge, PlayerNode, NetworkMetrics
-├── geometry/
-│   ├── distance.py         # Euclidean + point-to-segment distance
-│   └── passing_lane.py     # Passing lane obstruction detection
-├── data/
-│   ├── base.py             # Base data loading interface
+│
+├── __init__.py             # Public API only
+│
+├── core/                   # ✅ Public — core data models
+│   ├── models.py           #   Player, Snapshot, BallPosition
+│   └── types.py
+│
+├── data/                   # ✅ Public — data loading
 │   └── pff/
-│       ├── events.py       # PFF event data JSON parser
-│       ├── metadata.py     # Match metadata + roster loading
-│       ├── tracking.py     # Tracking data loader (kloppy, .jsonl.bz2)
-│       └── tracking_frames.py  # Fast animation frames (Parquet, ~20-50ms)
-├── viz/
-│   ├── plotly_pitch.py     # Plotly pitch rendering
-│   ├── plotly_passes.py    # Plotly pass analysis visualization
-│   ├── plotly_network.py   # Plotly pass network visualization
-│   ├── plotly_animation.py # Plotly tracking-data animation
+│       ├── events.py       #   PassEvent, extract_pass_events
+│       ├── metadata.py     #   load_match_info
+│       ├── tracking.py     #   kloppy-based tracking loader
+│       └── tracking_frames.py  # Fast Parquet animation frames
+│
+├── geometry/               # ✅ Public — geometry utilities
+│   ├── distance.py
+│   └── passing_lane.py
+│
+├── network/                # ✅ Public — pass network analysis
+│   ├── builder.py          #   build_pass_network
+│   ├── metrics.py          #   compute_metrics
+│   └── models.py           #   PassNetwork, PassEdge, PlayerNode, NetworkMetrics
+│
+├── viz/                    # ✅ Public — visualization
+│   ├── plotly_pitch.py
+│   ├── plotly_passes.py
+│   ├── plotly_network.py
+│   ├── plotly_animation.py
 │   ├── plotly_animation_3d.py
 │   ├── plotly_pitch_3d.py
-│   ├── mpl_pitch.py        # Matplotlib pitch rendering
-│   └── mpl_passes.py       # Matplotlib pass visualization
-├── validation/             # Scoring system validation tools
-└── learning/               # ML-based weight learning pipeline
+│   ├── mpl_pitch.py
+│   └── mpl_passes.py
+│
+├── pitch.py                # ✅ Public — Pitch high-level API
+│
+└── research/               # 🔬 Internal research (not public API)
+    ├── pass_value/         #   Pass Score metric
+    │   ├── analysis/
+    │   │   ├── analyzer.py #     analyze_snapshot, analyze_pass_event
+    │   │   └── models.py   #     AnalysisResult, PassOption, ScoringWeights
+    │   └── scoring/
+    │       ├── pass_score.py
+    │       ├── completion.py
+    │       ├── zone_value.py
+    │       ├── pressure.py
+    │       ├── space.py
+    │       └── penetration.py
+    ├── validation/         #   Statistical validation framework
+    │   ├── collector.py
+    │   ├── significance.py
+    │   ├── repeatability.py
+    │   ├── baselines.py
+    │   ├── consistency.py
+    │   └── sensitivity.py
+    └── learning/           #   ML-based weight optimisation
+        ├── dataset.py
+        ├── models.py
+        ├── evaluate.py
+        └── interpret.py
 
-app/                        # Interactive Dash web application (not part of the PyPI package)
+app/                        # Interactive Dash web application
 scripts/
 ├── validate_scoring.py     # Full validation report (CLI)
 ├── optimize_weights.py     # Weight optimization (differential evolution)
@@ -188,15 +239,17 @@ Enables ~20-50ms animation frame queries via PyArrow predicate pushdown.
 
 ---
 
-## Scripts
+## Research Scripts
 
-### Validate the scoring system
+> Requires `pip install "pitch-echo[research]"`
+
+### Validate Pass Score
 
 ```bash
 python scripts/validate_scoring.py
 ```
 
-Produces a comprehensive report: baseline comparisons, Spearman ρ, AUC, sensitivity analysis, and cross-match repeatability.
+Produces a comprehensive report: baseline comparisons, Spearman ρ, lines-broken AUC, sensitivity analysis, and cross-match repeatability.
 
 ### Optimize scoring weights
 
@@ -204,7 +257,7 @@ Produces a comprehensive report: baseline comparisons, Spearman ρ, AUC, sensiti
 python scripts/optimize_weights.py
 ```
 
-Uses differential evolution to find weights maximizing Spearman ρ(Pass Score, ΔxT).
+Uses `scipy.optimize.differential_evolution` to find weights maximizing Spearman ρ(Pass Score, ΔxT).
 
 ### Train ML models
 
@@ -212,7 +265,7 @@ Uses differential evolution to find weights maximizing Spearman ρ(Pass Score, �
 python scripts/train_scoring_model.py
 ```
 
-Trains Linear / Ridge / XGBoost models to learn optimal dimension weights from data.
+Trains Linear / Ridge / XGBoost models on the 5 scoring dimensions to learn data-driven weights.
 
 ---
 
@@ -231,7 +284,7 @@ uv run python app/app.py
 Features:
 - **Match selector** — browse all 64 FIFA World Cup 2022 matches
 - **Pass event browser** — pick any pass event by period, clock, passer, and target
-- **Interactive pitch** — Plotly rendering with players, ball, and ranked pass arrows (gold / silver / bronze)
+- **Interactive pitch** — players, ball, and ranked pass arrows (gold / silver / bronze)
 - **Analysis cards** — ranked pass options with 5-dimension breakdowns
 - **Tracking animation** — "Play Pass" replays the actual pass sequence from 25fps tracking data
 - **Pass network tab** — interactive team pass network with graph metrics
@@ -252,17 +305,17 @@ Tests cover the Pass Score formula, completion probability, geometry algorithms,
 
 > **A pure tactical optimization AI — only evaluating the optimal solution at the current instant.**
 
-**What PitchEcho does:**
-- Evaluates pass targets (who to pass to, not how)
+**What Pass Score evaluates:**
+- Pass targets (who to pass to, not how)
 - Static snapshot analysis — freeze a moment, find the optimal solution
 - Multi-dimensional scoring with fully explainable breakdowns
 - Clear 1st / 2nd / 3rd choice ranking
 
-**What PitchEcho does NOT do (by design):**
-- No match context (score, time remaining, leading/trailing)
-- No risk preference (conservative vs aggressive)
-- No chain reaction prediction (what happens after the pass)
-- No pass trajectory analysis (ball physics, spin, arc)
+**Out of scope (by design):**
+- Match context (score, time remaining)
+- Risk preference (conservative vs aggressive style)
+- Chain reaction prediction (what happens after the pass)
+- Pass trajectory (ball physics, spin, arc)
 
 See [CLAUDE.md](CLAUDE.md) for the full design document.
 
