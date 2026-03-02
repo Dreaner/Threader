@@ -11,8 +11,12 @@ Description:
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from kloppy import pff
+
+if TYPE_CHECKING:
+    from pitch_core.types import FrameSequence
 
 
 def load_tracking_data(
@@ -48,3 +52,45 @@ def load_tracking_data(
         limit=limit,
         only_alive=only_alive,
     )
+
+
+def load_as_sequence(
+    tracking_path: str | Path,
+    metadata_path: str | Path,
+    roster_path: str | Path,
+    *,
+    coordinates: str = "pff",
+    sample_rate: float | None = None,
+    limit: int | None = None,
+    only_alive: bool = True,
+) -> FrameSequence:
+    """Load PFF tracking data as a :class:`~pitch_core.types.FrameSequence`.
+
+    Convenience wrapper around :func:`load_tracking_data` that converts the
+    kloppy ``TrackingDataset`` to a pitch-core ``FrameSequence`` via
+    :func:`pitch_core.io.kloppy_adapter.from_tracking`.
+
+    Args:
+        tracking_path: Path to .jsonl.bz2 tracking file
+        metadata_path: Path to metadata JSON
+        roster_path: Path to roster JSON
+        coordinates: Coordinate system ("pff" for center-origin)
+        sample_rate: Downsample rate (e.g., 1/25 for 1fps from 25fps)
+        limit: Maximum number of frames to load
+        only_alive: Only include frames when ball is in play
+
+    Returns:
+        ``FrameSequence`` with velocities computed via finite differences.
+    """
+    from pitch_core.io.kloppy_adapter import from_tracking
+
+    dataset = load_tracking_data(
+        tracking_path,
+        metadata_path,
+        roster_path,
+        coordinates=coordinates,
+        sample_rate=sample_rate,
+        limit=limit,
+        only_alive=only_alive,
+    )
+    return from_tracking(dataset)

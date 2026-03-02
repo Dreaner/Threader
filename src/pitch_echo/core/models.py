@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import numpy as np
+
 
 @dataclass(frozen=True)
 class Player:
@@ -95,3 +97,45 @@ class Snapshot:
         if self._is_home(player):
             return list(self.away_players)
         return list(self.home_players)
+
+    @property
+    def pitch(self) -> PitchSpec:
+        """Pitch dimensions as a :class:`~pitch_core.types.PitchSpec` (center-origin)."""
+        from pitch_core.types import PitchSpec
+        return PitchSpec(length=self.pitch_length, width=self.pitch_width)
+
+    def to_frame_record(self, timestamp: float = 0.0) -> FrameRecord:
+        """Convert to a :class:`~pitch_core.types.FrameRecord` for use with pitch-core.
+
+        Args:
+            timestamp: Seconds from period start. Snapshot has no timestamp
+                field, so the caller must supply it when known (default 0.0).
+
+        Returns:
+            FrameRecord with players ordered home then away.
+            Velocities are not available in Snapshot, so they are set to None.
+        """
+        from pitch_core.types import FrameRecord
+        players = self.all_players
+        player_ids = [str(p.player_id) for p in players]
+        team_ids = [str(p.team_id) for p in players]
+        positions = (
+            np.array([[p.x, p.y] for p in players], dtype=np.float64)
+            if players
+            else np.empty((0, 2), dtype=np.float64)
+        )
+        is_goalkeeper = np.array(
+            [p.position == "GK" for p in players], dtype=bool
+        )
+        return FrameRecord(
+            timestamp=timestamp,
+            period=self.period,
+            ball_position=np.array(
+                [self.ball.x, self.ball.y, self.ball.z], dtype=np.float64
+            ),
+            player_ids=player_ids,
+            team_ids=team_ids,
+            positions=positions,
+            velocities=None,
+            is_goalkeeper=is_goalkeeper,
+        )

@@ -1164,13 +1164,37 @@ wheels = [
 ]
 
 [[package]]
+name = "pitch-core"
+version = "0.1.0"
+source = { editable = "../PitchCore" }
+dependencies = [
+    { name = "numpy" },
+    { name = "pandas" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "kaleido", marker = "extra == 'viz'", specifier = ">=0.2" },
+    { name = "kloppy", marker = "extra == 'kloppy'", specifier = ">=3.15" },
+    { name = "numpy", specifier = ">=1.24" },
+    { name = "pandas", specifier = ">=2.0" },
+    { name = "pitch-core", extras = ["kloppy", "viz", "dev"], marker = "extra == 'all'" },
+    { name = "plotly", marker = "extra == 'viz'", specifier = ">=5.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=5.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
+]
+provides-extras = ["kloppy", "viz", "dev", "all"]
+
+[[package]]
 name = "pitch-echo"
-version = "1.0.0"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "kloppy" },
     { name = "numpy" },
     { name = "pandas" },
+    { name = "pitch-core" },
 ]
 
 [package.optional-dependencies]
@@ -1212,6 +1236,7 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'viz'", specifier = ">=3.8" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "pandas", specifier = ">=2.1" },
+    { name = "pitch-core", editable = "../PitchCore" },
     { name = "pitch-echo", extras = ["viz"], marker = "extra == 'app'" },
     { name = "plotly", marker = "extra == 'viz'", specifier = ">=5.22" },
     { name = "pyarrow", marker = "extra == 'app'", specifier = ">=15.0" },
