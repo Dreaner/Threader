@@ -445,7 +445,7 @@ def main() -> None:
     t0 = time.time()
 
     # ── 1. Collect data ──────────────────────────────────────────────────
-    from pitch_echo.research.validation.collector import (
+    from pitch_echo.research.pass_value.validation.collector import (
         collect_validated_passes,
         data_summary,
         load_cache,
@@ -487,20 +487,20 @@ def main() -> None:
 
     # ── 2. Baselines ─────────────────────────────────────────────────────
     print("\n  Running baselines...", file=sys.stderr, flush=True)
-    from pitch_echo.research.validation.baselines import run_all_baselines
+    from pitch_echo.research.pass_value.validation.baselines import run_all_baselines
     baseline_results = run_all_baselines(records)
     print_baselines(baseline_results)
 
     # ── 3. Significance ──────────────────────────────────────────────────
     print("  Running significance tests...", file=sys.stderr, flush=True)
-    from pitch_echo.research.validation.significance import run_significance_tests
+    from pitch_echo.research.pass_value.validation.significance import run_significance_tests
     sig_results = run_significance_tests(records)
     print_significance(sig_results)
 
     # ── 4. Sensitivity ───────────────────────────────────────────────────
     if not args.skip_sensitivity:
         print("  Running sensitivity analysis...", file=sys.stderr, flush=True)
-        from pitch_echo.research.validation.sensitivity import run_sensitivity
+        from pitch_echo.research.pass_value.validation.sensitivity import run_sensitivity
         sens_results = run_sensitivity(records)
         print_sensitivity(sens_results)
     else:
@@ -509,13 +509,13 @@ def main() -> None:
 
     # ── 5. Repeatability ─────────────────────────────────────────────────
     print("  Running repeatability checks...", file=sys.stderr, flush=True)
-    from pitch_echo.research.validation.repeatability import run_repeatability
+    from pitch_echo.research.pass_value.validation.repeatability import run_repeatability
     rep_results = run_repeatability(records)
     print_repeatability(rep_results)
 
     # ── 6. Consistency ───────────────────────────────────────────────────
     print("  Running consistency checks...", file=sys.stderr, flush=True)
-    from pitch_echo.research.validation.consistency import run_consistency
+    from pitch_echo.research.pass_value.validation.consistency import run_consistency
     con_results = run_consistency(records)
     print_consistency(con_results)
 

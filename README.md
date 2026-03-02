@@ -186,29 +186,29 @@ src/pitch_echo/
 ├── pitch.py                # ✅ Public — Pitch high-level API
 │
 └── research/               # 🔬 Internal research (not public API)
-    ├── pass_value/         #   Pass Score metric
-    │   ├── analysis/
-    │   │   ├── analyzer.py #     analyze_snapshot, analyze_pass_event
-    │   │   └── models.py   #     AnalysisResult, PassOption, ScoringWeights
-    │   └── scoring/
-    │       ├── pass_score.py
-    │       ├── completion.py
-    │       ├── zone_value.py
-    │       ├── pressure.py
-    │       ├── space.py
-    │       └── penetration.py
-    ├── validation/         #   Statistical validation framework
-    │   ├── collector.py
-    │   ├── significance.py
-    │   ├── repeatability.py
-    │   ├── baselines.py
-    │   ├── consistency.py
-    │   └── sensitivity.py
-    └── learning/           #   ML-based weight optimisation
-        ├── dataset.py
-        ├── models.py
-        ├── evaluate.py
-        └── interpret.py
+    └── pass_value/         #   Pass Score — metric, validation, learning
+        ├── analysis/
+        │   ├── analyzer.py #     analyze_snapshot, analyze_pass_event
+        │   └── models.py   #     AnalysisResult, PassOption, ScoringWeights
+        ├── scoring/
+        │   ├── pass_score.py
+        │   ├── completion.py
+        │   ├── zone_value.py
+        │   ├── pressure.py
+        │   ├── space.py
+        │   └── penetration.py
+        ├── validation/     #   Statistical validation framework
+        │   ├── collector.py
+        │   ├── significance.py
+        │   ├── repeatability.py
+        │   ├── baselines.py
+        │   ├── consistency.py
+        │   └── sensitivity.py
+        └── learning/       #   ML-based weight optimisation
+            ├── dataset.py
+            ├── models.py
+            ├── evaluate.py
+            └── interpret.py
 
 app/                        # Interactive Dash web application
 scripts/

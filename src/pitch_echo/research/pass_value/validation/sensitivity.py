@@ -12,10 +12,10 @@ from scipy import stats
 
 from pitch_echo.research.pass_value.analysis.models import DEFAULT_WEIGHTS, ScoringWeights
 from pitch_echo.research.pass_value.scoring.pass_score import compute_pass_score
-from pitch_echo.research.validation.baselines import rank_with_weights
+from pitch_echo.research.pass_value.validation.baselines import rank_with_weights
 
 if TYPE_CHECKING:
-    from pitch_echo.research.validation.collector import ValidatedPass
+    from pitch_echo.research.pass_value.validation.collector import ValidatedPass
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────

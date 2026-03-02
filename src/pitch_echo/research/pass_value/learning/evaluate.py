@@ -14,7 +14,7 @@ from pitch_echo.research.pass_value.analysis.models import DEFAULT_WEIGHTS, Scor
 from pitch_echo.research.pass_value.scoring.pass_score import _adjusted_zone, compute_pass_score
 
 if TYPE_CHECKING:
-    from pitch_echo.research.validation.collector import ValidatedPass
+    from pitch_echo.research.pass_value.validation.collector import ValidatedPass
 
 
 def rescore_with_weights(

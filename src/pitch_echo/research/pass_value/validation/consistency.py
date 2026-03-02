@@ -15,7 +15,7 @@ from pitch_echo.research.pass_value.analysis.models import DEFAULT_WEIGHTS
 from pitch_echo.research.pass_value.scoring.pass_score import compute_pass_score
 
 if TYPE_CHECKING:
-    from pitch_echo.research.validation.collector import ValidatedPass
+    from pitch_echo.research.pass_value.validation.collector import ValidatedPass
 
 
 # ── A. Internal Dimension Correlations ───────────────────────────────────────
@@ -184,7 +184,7 @@ def stage_consistency(records: list[ValidatedPass]) -> dict:
         return {"error": "cannot split by stage (all records in same range)"}
 
     def group_metrics(recs: list[ValidatedPass], label: str) -> dict:
-        from pitch_echo.research.validation.repeatability import _group_auc, _group_concordance
+        from pitch_echo.research.pass_value.validation.repeatability import _group_auc, _group_concordance
 
         auc = _group_auc(recs)
         conc = _group_concordance(recs)

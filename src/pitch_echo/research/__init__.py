@@ -6,7 +6,6 @@ notice between versions.  Do **not** depend on them in production code.
 
 Current research areas
 ----------------------
-- ``pass_value``: AlphaGo-inspired pass target evaluation (Pass Score)
-- ``validation``: Statistical validation framework
-- ``learning``:   ML-based weight optimisation
+- ``pass_value``: AlphaGo-inspired pass target evaluation (Pass Score),
+  including statistical validation and ML-based weight optimisation.
 """

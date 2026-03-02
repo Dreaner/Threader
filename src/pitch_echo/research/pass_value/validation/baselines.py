@@ -16,7 +16,7 @@ from pitch_echo.research.pass_value.scoring.pass_score import _adjusted_zone, co
 
 if TYPE_CHECKING:
     from pitch_echo.research.pass_value.analysis.models import PassOption
-    from pitch_echo.research.validation.collector import ValidatedPass
+    from pitch_echo.research.pass_value.validation.collector import ValidatedPass
 
 
 # ---------------------------------------------------------------------------

@@ -37,10 +37,10 @@ _project_root = Path(__file__).resolve().parent.parent
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
-from pitch_echo.research.learning.dataset import train_test_split_by_match
-from pitch_echo.research.learning.evaluate import evaluate_weights, rescore_with_weights
+from pitch_echo.research.pass_value.learning.dataset import train_test_split_by_match
+from pitch_echo.research.pass_value.learning.evaluate import evaluate_weights, rescore_with_weights
 from pitch_echo.research.pass_value.analysis.models import DEFAULT_WEIGHTS, ScoringWeights
-from pitch_echo.research.validation.collector import (
+from pitch_echo.research.pass_value.validation.collector import (
     ValidatedPass,
     collect_validated_passes,
     data_summary,

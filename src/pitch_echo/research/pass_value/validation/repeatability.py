@@ -12,7 +12,7 @@ import numpy as np
 from scipy import stats as sp_stats
 
 if TYPE_CHECKING:
-    from pitch_echo.research.validation.collector import ValidatedPass
+    from pitch_echo.research.pass_value.validation.collector import ValidatedPass
 
 
 # ── Helpers (per-group metric computation) ───────────────────────────────────
